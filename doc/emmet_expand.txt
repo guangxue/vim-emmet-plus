@@ -1,0 +1,75 @@
+*vim_emmet_expand.txt*    emmet like plugin, come with auto-pair, snippet expanding and more.
+
+                            vim-emmet-plus
+
+CONTENTS                                            *vim-emmet-plus*
+
+    1. Introduction .............................. |emmet-expand-introduction|
+    2. Default Settings ...........................|emmet-expand-default|
+    3. Mappings ...................................|emmet-expand-mappings|
+    4. Features ...................................|emmet-expand-features|
+    
+================================================================================
+INTRODUCTION                                                    *vim-emmet-expand*
+
+vim-emmet-expand is emmet like plugin for vim. It comes with auto-pair feature,
+snippet expanding, and all trigger with Tab.
+
+==================================================================================
+DEFAULT SETTINGS                                             *emmmet-expand-default*
+
+Default pairs are defined in array.
+Type: array
+Default: ["", '', (), {}, <>, ``]
+
+==================================================================================
+MAPPINGS                                                    *emmmet-expand-mappings*
+
+There are five mapping functions:
+
+
+map#pairs({pair}, {ftname})                                          *map#pairs()*
+            Mappings are register with map#pairs() function. {pair} is array for
+            {ftname} filetype. {ftname} need to be set before using this function
+            properly.
+            Example:
+            >
+                call map#pairs(['**', '$$'], 'javascript')
+            <
+
+map#ifunc({imaps})                                                   *map#ifunc()*
+            map#ifunc() is used for setup imaps. It will use 'inoremap' as default
+            mapping, with default arguments '<buffer> <silent> '.
+            {imaps} is a dictionary. To map special keys are set to '<Space>', '<Tab>'
+            '<CR>', '<Space>' and etc. Special keys need inside angle brackets.
+            There are two default function that used in keys, which are mapping to
+            each pairs that set in map#pairs(). One is 'append', the other one is
+            'close', last one is 'wrap', 'wrap' is used to visual mode. TO set your
+            own mapping. Put mapping key and value inside {imaps}.mkeys
+
+            Example:
+            >
+                call map#ifunc({'mkeys': {',': 'move#inside'}})
+            <
+            It will map `,` with autoload function 'move#inside()'.
+            Note: for local mapping function, use captial letter as the first function
+            name, like 'Changebrackets()'.
+
+map#vfunc({vmaps})                                                   *map#vfunc()*
+            map#vfunc() is used for setup vmaps. It will use 'vnoremap' as default
+            mapping, with default arguments '<buffer> <silent> '.
+            {vmaps} is a dictionary.
+
+map#nfunc({nmaps})                                                   *map#nfunc()*
+            map#nfunc() has not implement yet currently. It will implemented in
+            the comming updates. It will come with more feature like change, edit,
+            delete surrounding brackets, text.
+
+map#exe()                                                            *map#exe()*
+            map#exe() is used for executing mappings.
+
+==================================================================================
+FEATURES                                                    *emmmet-expand-features*
+
+There are also have supports for auto-pair features.
+

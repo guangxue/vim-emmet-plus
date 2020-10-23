@@ -126,7 +126,7 @@ use `k` for up selection , `j` for down selection.
 
 ### Bring back complete menu
 
-When text before cursor is `CSS property` name ends with semi-colon,
+When text before cursor is `CSS property` name ends with colon,
 it will bring back complete menu automatically
 
 

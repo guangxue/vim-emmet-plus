@@ -29,6 +29,14 @@ function! str#nnchar()
     return s:get_char(2)[1]
 endf
 
+function! str#prev2chars()
+    return str#pchar().str#ppchar()
+endf
+
+function! str#next2chars()
+    return str#nchar().str#nnchar()
+endf
+
 function! str#before()
     let pidx = str#pidx()
     let front = getline('.')[0:pidx]
@@ -217,4 +225,31 @@ function! str#inside_pairs()
     else
         return ""
     endif
+endf
+
+function! str#outer_pair(start, end)
+    return searchpair(a:start, '\%#', a:end, 'rcnWz')
+endf
+
+function! str#startlnum_for(start, end)
+    return searchpair(a:start, '\%#', a:end, 'bnWz')
+endf
+
+function! str#endlnum_for(start, end)
+    return searchpair(a:start, '\%#', a:end, 'nWz')
+endf
+
+function! str#endc_searchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'cnW')]
+endf
+
+function! str#startc_searchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'bcnW'), searchpair(a:start, '\%#', a:end, 'nW')]
+endf
+function! str#searchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
+endf
+
+function! str#outersearchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'rbnW'), searchpair(a:start, '\%#', a:end, 'rnW')]
 endf

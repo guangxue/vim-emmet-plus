@@ -25,7 +25,9 @@ function! snippet#vim()
         return "\<Tab>"
     endif
     
-    let [lnum, col] = searchpos('\zs{\a\+}', 'Wz')
+    let clnum = line('.')
+    let stopline = clnum + 2
+    let [lnum, col] = searchpos('\zs{\a\+}', 'Wz', stopline)
     call cursor(lnum, col)
     let char = getline(lnum)[col-1]
     if char == '{'

@@ -44,6 +44,7 @@ let s:expand_settings = {
 \                   ."<html lang=${lang}>\n"
 \                   ."<head>\n"
 \                   ."\t<meta charset=${charset}>\n"
+\                   ."\t<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n"
 \                   ."\t<title>Document</title>\n"
 \                   ."</head>\n"
 \                   ."<body>\n\t${0}\n</body>\n"

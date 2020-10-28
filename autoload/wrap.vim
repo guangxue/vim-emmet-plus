@@ -21,7 +21,7 @@ function! s:wrap_lines()
     if len(lines) == 1
         let text = ""
         let line = trim(lines[0])
-        let uabbr = input("Tag:")
+        let uabbr = input("Wrap:")
         let text = uabbr
         let finalabbr = uabbr.'{'.line.'}'
         let expanded = s:parse_abbr(finalabbr)
@@ -59,4 +59,36 @@ function! wrap#brackets(pair)
         let downl = line("'>")
         let lines = getline(upline, downl)
     endif
+endf
+
+function! wrap#comment()
+    let ft = &ft
+    let clnum = line('.')
+    let pat_str = '\zs\S.\+\S\ze'
+    let cline = getline('.')
+    let clinestr = matchstr(cline, pat_str)
+
+    if ft =~ 'html'
+        return lang#html#toggle_comment()
+    else
+        if str =~ '^\/\*\='
+            if str[1] == '*'
+                let uncomment_line = substitute(line, '\/\* ', '', 'g')
+                let uncomment_line = substitute(uncomment_line, ' \*/', '', 'g')
+                call setline('.', uncomment_line)
+            elseif str[1] == '/' && str[2] == ' '
+                let uncomment_line = substitute(line, '\/\/ ', '', 'g')
+                call setline('.', uncomment_line)
+            elseif str[1] == '/' && str[2] != ' '
+                let uncomment_line = substitute(line, '\/\/', '', 'g')
+                call setline('.', uncomment_line)
+                return ''
+            endif
+        else
+            let comment_line = substitute(line, pat_str, '/* '.str.' */', '')
+            call setline('.', comment_line)
+            return ''
+        endif
+    endif
+    return ''
 endf

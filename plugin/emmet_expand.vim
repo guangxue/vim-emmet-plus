@@ -21,9 +21,11 @@ call map#ifunc({
 \   '<CR>':'cr#Enter',
 \   '<BS>':'bs#Backspace',
 \   '<Space>':'sp#Space',
+\   '<C-b>': 'wrap#comment',
 \   'feature':{',':'move#inside()'}
 \})
 call map#vfunc({'<Tab>': 'wrap#abbr'})
+call map#nfunc({'<C-b>': 'wrap#comment'})
 call map#exe()
 
 

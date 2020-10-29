@@ -5,6 +5,9 @@ function! s:wrap_blocks()
     let before = getline('.')[0:lcol-1]
     let after = getline('.')[rcol+1:]
     let input_abbr = input("Wrap: ")
+    if empty(input_abbr)
+        return ''
+	endif
     let to_expand = input_abbr.'{'.selected.'}'
     let expanded = expand#selection(to_expand)
     call buf#setlines(expanded, before, after)

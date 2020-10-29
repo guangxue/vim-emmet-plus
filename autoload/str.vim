@@ -235,18 +235,12 @@ function! str#inside_pairs()
     endif
 endf
 
-let s:inline = load#html_inline()
-let s:pat_tag = '\(<\)\@<=\w\+'
-let s:lnum = line('.')
-let s:inline_skip = "index(s:inline,getline('.')->matchstr(s:pat_tag))>=0 || indent('.') == indent(line('.')-1)"
-let s:indent_skip = "indent('.')/4 != indent('.')/4 - 1"
-
 function! str#outer_pair(start, end)
     return searchpair(a:start, '\%#', a:end, 'rcnWz')
 endf
 
 function! str#startlnum_for(start, end)
-    return searchpair(a:start, '\%#', a:end, 'bnW', s:indent_skip)
+    return searchpair(a:start, '\%#', a:end, 'bnW')
 endf
 
 function! str#endlnum_for(start, end)

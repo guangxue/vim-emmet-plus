@@ -224,9 +224,6 @@ function! s:toggle_emptyline(clnum)
     silent! normal! vat
     let endlnum = line('.')
     call cursor(a:clnum, col) 
-    echom "empty line"
-    echom "startlnum ->".startlnum
-    echom "endlnum ->".endlnum
     
     if getline(startlnum)->matchstr(s:pat_str) =~ '<!'
         let [uncm_startl, uncm_endl] = s:uncomment_lines(startlnum, endlnum)

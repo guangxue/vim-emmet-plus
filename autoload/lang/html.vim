@@ -119,7 +119,6 @@ function! s:uncomment_tags()
     if startlnum !=0 && endlnum != 0
         call s:uncomment_inner(startlnum, endlnum)
         if startlnum == endlnum
-            echom "startlnum == endlnu"
             let uncm_line = s:uncomment_lines(startlnum, endlnum)
             call setline(startlnum, uncm_line)
             return ''
@@ -165,6 +164,29 @@ function! s:comment_starttag(clnum)
     else
         "" comment nesting tags
         let [startlnum, endlnum] = str#searchindentrange(a:clnum)
+        let start_tagname = getline(startlnum)->matchstr(s:pat_opentag)
+        let end_tagname = getline(endlnum)->matchstr(s:pat_closetag)
+        """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+        " using vat get outer html tags
+        if start_tagname != end_tagname
+            let col = col('.')
+            let clp = @0
+            let mode = mode()
+            silent! normal! vataty
+            let @0 = clp 
+            let @* = clp
+            let startlnum = line('.')
+            silent! normal! vat
+            let endlnum = line('.')
+            call cursor(a:clnum, col) 
+            if mode == 'i'
+                startinsert
+            else
+                call feedkeys("\<ESC>")
+            endif
+            
+        endif
+        """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
     endif
 
     if getline(startlnum) =~ '<!-- <' && getline(endlnum) =~ '> -->'
@@ -191,6 +213,39 @@ function! s:comment_starttag(clnum)
     return ''
 endfun
 
+function! s:toggle_emptyline(clnum)
+    let col = col('.')
+    let clp = @0
+    let mode = mode()
+    silent! normal! vaty
+    let @0 = clp 
+    let @* = clp
+    let startlnum = line('.')
+    silent! normal! vat
+    let endlnum = line('.')
+    call cursor(a:clnum, col) 
+    echom "empty line"
+    echom "startlnum ->".startlnum
+    echom "endlnum ->".endlnum
+    
+    if getline(startlnum)->matchstr(s:pat_str) =~ '<!'
+        let [uncm_startl, uncm_endl] = s:uncomment_lines(startlnum, endlnum)
+        call setline(startlnum, uncm_startl)
+        call setline(endlnum, uncm_endl)
+    else
+        let [cm_startl, cm_endl] = s:comment_lines(startlnum, endlnum)
+        call setline(startlnum, cm_startl)
+        call setline(endlnum, cm_endl)
+    endif
+
+    if mode == 'i'
+        startinsert
+    else
+        call feedkeys("\<ESC>")
+    endif
+    return ''
+endfun
+
 " __main__ "
 function! lang#html#toggle_comment()
     let clnum = line('.')
@@ -204,6 +259,8 @@ function! lang#html#toggle_comment()
         return s:comment_starttag(clnum)
     elseif clinestr =~ '^<\/'
         return s:comment_endtag(clnum)
+    elseif empty(clinestr)
+        return s:toggle_emptyline(clnum)
     else
         return ''
     endif

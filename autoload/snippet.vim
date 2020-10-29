@@ -51,7 +51,7 @@ endf
 
 function! snippet#htmldjango()
     let ba_str = str#before_after()
-    let snip = ba_str[0]
+    let snip = len(ba_str[0]) == 0 ? "" : ba_str[0]
     let before = ba_str[1]
     let after = ba_str[2]
     let beforec = str#before()

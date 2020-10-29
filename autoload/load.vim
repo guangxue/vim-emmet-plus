@@ -462,6 +462,10 @@ function! load#expandsettings()
     return s:expand_settings
 endf
 
+function! load#html_inline()
+    return s:expand_settings.html.inline
+endf
+
 function! load#snippets(ftname)
     let ft = a:ftname
     let uds = 'g:expand_'.ft.'_snippets'

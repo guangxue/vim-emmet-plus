@@ -259,6 +259,10 @@ NOT TO
 " Example:
 let g:expand_css_snippets = {'bgk': 'background-color: #efefe${0};'}
 let g:expand_html_snippets = {'ul5': 'ul>li*5'}
+
+" vimscript snippet is disabled by default.
+" Enabling by append following line.
+let g:expand_vimscript = 1
 ```
 
 

@@ -204,6 +204,14 @@ function! str#before_after(str="")
     return [str, before_str, after_str]
 endf
 
+function! str#before_cursor()
+    return str#before_after()[1]
+endfun
+
+function! str#after_cursor()
+    return str#before_after()[2]
+endfun
+
 function! str#inside_pairs()
     let pchar = str#pchar()
     let nchar = str#nchar()
@@ -227,29 +235,41 @@ function! str#inside_pairs()
     endif
 endf
 
+let s:inline = load#html_inline()
+let s:pat_tag = '\(<\)\@<=\w\+'
+let s:lnum = line('.')
+let s:inline_skip = "index(s:inline,getline('.')->matchstr(s:pat_tag))>=0 || indent('.') == indent(line('.')-1)"
+let s:indent_skip = "indent('.')/4 != indent('.')/4 - 1"
+
 function! str#outer_pair(start, end)
     return searchpair(a:start, '\%#', a:end, 'rcnWz')
 endf
 
 function! str#startlnum_for(start, end)
-    return searchpair(a:start, '\%#', a:end, 'bnWz')
+    return searchpair(a:start, '\%#', a:end, 'bnW', s:indent_skip)
 endf
 
 function! str#endlnum_for(start, end)
-    return searchpair(a:start, '\%#', a:end, 'nWz')
+    return searchpair(a:start, '\%#', a:end, 'nW')
 endf
 
+"" outer search
+function! str#outersearchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'rbnW'), searchpair(a:start, '\%#', a:end, 'rnW')]
+endf
+
+"" cursor at |</
 function! str#endc_searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'cnW')]
 endf
 
+"" cursor at |<
 function! str#startc_searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bcnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
+
+"" range search
 function! str#searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
 
-function! str#outersearchrange(start, end)
-    return [searchpair(a:start, '\%#', a:end, 'rbnW'), searchpair(a:start, '\%#', a:end, 'rnW')]
-endf

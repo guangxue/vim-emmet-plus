@@ -75,7 +75,7 @@ function! s:sameindent(startl, endl)
     endif
 endf
 
-function! s:comment_endtag(clnum, ret='')
+function! s:comment_endtag(clnum)
     " cursor at close tag `|</w+>`
     " use endc_search
     let tagname = getline(a:clnum)->matchstr(s:pat_closetag)
@@ -90,28 +90,36 @@ function! s:comment_endtag(clnum, ret='')
                 let [cm_startl, cm_endl] = s:comment_lines(startlnum, endlnum)
                 call setline(startlnum, cm_startl)
                 call setline(endlnum, cm_endl)
-                return a:ret
+                return ''
             endif
         endif
     endif
-    return a:ret
+    return ''
 endfun
 
-
-"" uncomment tags is a combination of uncomment_lines and setlines
 function! s:uncomment_tags()
-    let [startlnum, endlnum] = [0, 0]
+    let [startlnum, endlnum, clnum] = [0, 0, line('.')]
     if str#next2chars() == '<!'
         let tagname = getline('.')->matchstr(s:pat_str)->matchstr(s:pat_opentag)
         " start cursor at open tag `<!--`
         " use startc_searchrange()
-        let [startlnum, endlnum] = str#startc_searchrange('<!-- <'.tagname, '</'.tagname.'> -->')
-    else
+        let inline_elements = load#html_inline()
+        if index(inline_elements, tagname) >= 0
+            let startlnum = clnum
+            let endlnum = clnum
+        else
+            let [startlnum, endlnum] = str#startc_searchrange('<!-- <'.tagname, '</'.tagname.'> -->')
+        endif
+    elseif str#before_cursor()->matchstr(s:pat_str) =~ '^<!'
         let [startlnum, endlnum] = str#searchrange('<!--', '-->')
+    else
+        let [startlnum, endlnum] = str#searchindentrange(line('.'))
     endif
 
     if startlnum !=0 && endlnum != 0
+        call s:uncomment_inner(startlnum, endlnum)
         if startlnum == endlnum
+            echom "startlnum == endlnu"
             let uncm_line = s:uncomment_lines(startlnum, endlnum)
             call setline(startlnum, uncm_line)
             return ''
@@ -126,33 +134,37 @@ function! s:uncomment_tags()
 endf
 
 function! s:comment_starttag(clnum)
-    let [startlnum, endlnum, tagname, inline_elements] = [0, 0, '', []]
+    let [startlnum, endlnum] = [0, 0]
+    let tagname = getline(a:clnum)->matchstr(s:pat_str)->matchstr(s:pat_opentag)
+    let inline_elements = load#html_inline()
+    "" comment inline-elements
     if str#after_cursor() =~ '^<\w\+'
-        let tagname = getline(a:clnum)->matchstr(s:pat_str)->matchstr(s:pat_opentag)
-        let inline_elements = load#html_inline()
-        let [startlnum, endlnum] = str#startc_searchrange('<'.tagname, '</'.tagname)
+        "" comment cursor-next-to-tag
+        if index(inline_elements, tagname) >= 0
+            let startlnum = a:clnum
+            let endlnum = a:clnum
+        else
+            let [startlnum, endlnum] = str#startc_searchrange('<'.tagname, '</'.tagname)
+        endif
+    elseif str#before_cursor() =~ '\S' && str#after_cursor() =~ '\w\+'
+        "" comment cursor-on-text
+        let clinestr = getline(a:clnum)->matchstr(s:pat_str)
+        "" comment one-line-tag
+        if clinestr =~ '^<\w\+' && clinestr =~ '<\/\w\+>$'
+            let startlnum = a:clnum
+            let endlnum = a:clnum
+        else
+            "" comment on-text-range
+            if index(inline_elements, tagname) >= 0
+                let startlnum = a:clnum
+                let endlnum = a:clnum
+            else
+                let [startlnum, endlnum] = str#searchrange('<'.tagname, '</'.tagname.'>')
+            endif
+        endif
     else
-        let search_indent = (indent(a:clnum) / &sw) - 1
-        let [prevlnum, nextlnum] = [a:clnum, a:clnum]
-        let [startlnum, endlnum] = [0,0]
-        while 1
-            if indent(nextlnum) / &sw == search_indent
-                let endlnum = nextlnum
-                break
-            endif
-            let nextlnum += 1
-        endwhile
-        while 1
-            if indent(prevlnum) / &sw == search_indent
-                let startlnum = prevlnum
-                break
-            endif
-            let prevlnum -= 1
-        endwhile
-    endif
-
-    if index(inline_elements, tagname) >= 0
-        let startlnum = a:clnum
+        "" comment nesting tags
+        let [startlnum, endlnum] = str#searchindentrange(a:clnum)
     endif
 
     if getline(startlnum) =~ '<!-- <' && getline(endlnum) =~ '> -->'
@@ -165,13 +177,11 @@ function! s:comment_starttag(clnum)
         if !s:has_outer_uncomment_done()
             if endlnum > a:clnum
                 let [cm_startl, cm_endl] = s:comment_lines(startlnum, endlnum)
-                if s:sameindent(startlnum, endlnum)
-                    call setline(startlnum, cm_startl)
-                    call setline(endlnum, cm_endl)
-                    return ''
-                endif
+                call setline(startlnum, cm_startl)
+                call setline(endlnum, cm_endl)
+                return ''
             endif
-            if startlnum == a:clnum || endlnum == a:clnum
+            if startlnum == endlnum
                 let cm_curline = s:comment_lines(a:clnum, a:clnum)
                 call setline(a:clnum, cm_curline)
                 return ''
@@ -186,7 +196,7 @@ function! lang#html#toggle_comment()
     let clnum = line('.')
     let clinestr = getline(clnum)->matchstr(s:pat_str)
 
-    if str#after_cursor() =~ '^<!' || clinestr =~ '-->'
+    if clinestr =~ '^<!' || clinestr =~ '-->'
         return s:uncomment_tags()
     endif
 

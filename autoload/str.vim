@@ -205,11 +205,11 @@ function! str#before_after(str="")
 endf
 
 function! str#before_cursor()
-    return str#before_after()[1]
+    return getline('.')[:str#pidx()]
 endfun
 
 function! str#after_cursor()
-    return str#before_after()[2]
+    return getline('.')[str#nidx():]
 endfun
 
 function! str#inside_pairs()
@@ -267,3 +267,23 @@ function! str#searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
 
+function! str#searchindentrange(clnum)
+    let search_indent = (indent(a:clnum) / &sw) - 1
+    let [prevlnum, nextlnum] = [a:clnum, a:clnum]
+    let [startlnum, endlnum] = [0,0]
+    while 1
+        if indent(nextlnum) / &sw == search_indent && !empty(getline(nextlnum))
+            let endlnum = nextlnum
+            break
+        endif
+        let nextlnum += 1
+    endwhile
+    while 1
+        if indent(prevlnum) / &sw == search_indent && !empty(getline(prevlnum))
+            let startlnum = prevlnum
+            break
+        endif
+        let prevlnum -= 1
+    endwhile
+    return [startlnum, endlnum]
+endf

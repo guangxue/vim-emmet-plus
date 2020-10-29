@@ -463,7 +463,7 @@ function! load#expandsettings()
 endf
 
 function! load#html_inline()
-    return s:expand_settings.html.inline
+    return s:expand_settings.html.inline + s:expand_settings.html.void
 endf
 
 function! load#snippets(ftname)

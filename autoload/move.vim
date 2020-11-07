@@ -39,4 +39,3 @@ function! move#inside()
     endif
     return ','
 endf
-

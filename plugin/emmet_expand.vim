@@ -28,12 +28,12 @@ call map#vfunc({'<Tab>': 'wrap#abbr'})
 call map#nfunc({'<C-b>': 'wrap#comment'})
 call map#exe()
 
-
-set completefunc=complete#css
-set completeopt=menuone,noinsert
-augroup completecss
+set completeopt=menuone,noinsert,popup
+set completepopup=border:off
+augroup completemenu
     autocmd!
-    autocmd TextChangedI *.css,*.html call complete#typing()
+    autocmd TextChangedI *.css,*.html call complete#onCSSTextChanged()
+    autocmd TextChangedI *.py call complete#onPythonTextChanged()
 augroup END
 
 let &cpoptions = s:save_cpo

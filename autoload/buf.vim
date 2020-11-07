@@ -96,3 +96,6 @@ function! buf#cursor(caret='')
         return ''
     endif
 endf
+
+function! buf#ftdetect()
+endf

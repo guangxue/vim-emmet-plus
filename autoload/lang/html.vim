@@ -167,7 +167,7 @@ function! s:comment_starttag(clnum)
         let start_tagname = getline(startlnum)->matchstr(s:pat_opentag)
         let end_tagname = getline(endlnum)->matchstr(s:pat_closetag)
         """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-        " using vat get outer html tags
+        " using `vat` to get correct outer startlnum & endlnum as last resort.
         if start_tagname != end_tagname
             let col = col('.')
             let clp = @0

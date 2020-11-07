@@ -26,7 +26,7 @@ function! snippet#vim()
     endif
     
     let clnum = line('.')
-    let stopline = clnum + 2
+    let stopline = clnum
     let [lnum, col] = searchpos('\zs{\a\+}', 'Wz', stopline)
     call cursor(lnum, col)
     let char = getline(lnum)[col-1]

@@ -3,6 +3,7 @@
 """"""""""""""""""""""""""""""""""""""""""""""
 setlocal expandtab
 setlocal shiftwidth=4
+set completefunc=complete#func
 let g:pyindent_open_paren = 'shiftwidth()/shiftwidth'
 
 function! s:is_fstr()
@@ -51,5 +52,5 @@ endfunction
 
 
 call map#pairs(['():'], 'python')
-call map#ifunc({'append':'PyAppend','<BS>':'PyBackspace'})
+call map#ifunc({'append':'PyAppend','<BS>':'PyBackspace', 'feature': {'k':'complete#up()', 'j':'complete#down()'}})
 call map#exe()

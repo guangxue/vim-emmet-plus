@@ -210,7 +210,6 @@ let s:models = {
 \}
 
 function! django#db#import#models()
-    echom "from django#db#import#models()"
     return s:models
 endfun
 

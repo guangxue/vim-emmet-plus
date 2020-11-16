@@ -1,6 +1,6 @@
 "" complete#django#model#main()
 function! s:get_managers(fpath)
-    echom "fpath =>".a:fpath
+    
 endfun
 
 function! s:get_fields(fpath)

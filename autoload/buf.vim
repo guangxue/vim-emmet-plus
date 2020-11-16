@@ -97,5 +97,39 @@ function! buf#cursor(caret='')
     endif
 endf
 
+function! s:scandir(dir, mod)
+    let found_dir = ""
+    let mod = a:mod
+
+    for file in readdir(a:dir)
+        if file == 'manage.py'
+            let found_dir = a:dir
+            break
+        endif
+    endfor
+    
+    if !empty(found_dir)
+        return found_dir
+    else
+        let mod .=':h'
+        return mod
+	endif
+endfun
+
 function! buf#ftdetect()
+    let mod = "%:p:h"
+    let found = ""
+    let dir = expand(mod)
+    let mod = s:scandir(dir, mod)
+    while mod =~ ':'
+        let hs = str#matchcount(mod, ':h')
+        if hs > 6
+            break
+        endif
+        let dir = expand(mod)
+        let mod = s:scandir(dir, mod)
+    endwhile
+    if mod =~ '/'
+        let &ft = 'htmldjango'
+    endif
 endf

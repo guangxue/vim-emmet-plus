@@ -36,6 +36,9 @@ endf
 function! str#next2chars()
     return str#nchar().str#nnchar()
 endf
+function! str#last2chars()
+    return str#ppchar().str#pchar()
+endfun
 
 function! str#before()
     let pidx = str#pidx()
@@ -138,7 +141,6 @@ function! str#startswith(str, char)
         return ''
 endf
 
-
 function! str#sub(str, pat, sub, count='')
     if count == 'g'
         return substitute(a:str, a:pat, a:sub, 'g')
@@ -212,6 +214,30 @@ function! str#after_cursor()
     return getline('.')[str#nidx():]
 endfun
 
+function! str#expr()
+   let line = getline('.') 
+   let idx = 0
+   for i in range(len(line))
+       if line[i] =~ '^\S'
+           let idx = i
+           break
+       endif
+   endfor
+   return line[idx:str#pidx()]
+endfun
+
+function! str#pword()
+    let before = str#before_cursor()
+    if !empty(before)
+        let split_before = split(before)
+        let pword = get(split_before, -1, v:none)
+        return pword
+	endif
+endfun
+
+function! str#dotted(str)
+    return substitute(a:str, '\s', '\.', 'g')
+endfun
 function! str#inside_pairs()
     let pchar = str#pchar()
     let nchar = str#nchar()
@@ -294,3 +320,4 @@ function! str#clearRegs()
         call setreg(r, [])
     endfor
 endf
+

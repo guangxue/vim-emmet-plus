@@ -96,7 +96,6 @@ function! snippet#css()
     if empty(snippet)
         return "\<Tab>"
 	endif
-    
 
     if snippet =~ '|'
         let cssvals = split(snippet, ':')

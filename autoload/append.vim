@@ -1,14 +1,13 @@
-let s:leaderchar = '\'
 
 function! s:append_quotes(qt, space=0)
     if str#nchar() == a:qt 
         return move#right(1)
-    elseif str#ptext_has(a:qt) && str#isalpha(str#pchar())
+    elseif str#ptext_has(a:qt) && str#isalpha(str#pchar()) 
+        return a:qt
+    elseif str#isalpha(str#pchar()) && a:qt == "'"
         return a:qt
     elseif str#isalpha(str#nchar())
         return a:qt
-    elseif str#pchar() == s:leaderchar
-        return bs#bs().a:qt
     else
         if a:space > 0
             return a:qt[0].'  '.a:qt[1].move#left(2)
@@ -24,8 +23,6 @@ function! s:append_brackets(left, right, space=0)
         else
             return a:left
         endif
-    elseif str#pchar() == s:leaderchar
-        return bs#bs().a:left
     else
         if a:space > 0
             return a:left.'  '.a:right.move#left(2)

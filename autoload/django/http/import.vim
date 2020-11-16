@@ -41,7 +41,6 @@ function! django#http#import#HttpResponse()
     \           info:'A string represeting the full path to the requested page, '
     \               .'not including the scheme or domain'},
     \   ],
-    \   'params':[]
     \}
     return response
 endfun

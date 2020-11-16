@@ -853,13 +853,13 @@ function! s:jumping()
             endif
         endif
     elseif b_cur =~ '^{%'
-        let [lnum, col] = searchpos('\${\d}', 'zW', stoplnum)
+        let [lnum, col] = searchpos('\${\d}', 'zW', c_lnum)
+        echom "lnum =>".lnum
+        echom "col =>".col
         if col!= 0
-            call cursor(lnum, col)
-            
-            let num = 4
-            call feedkeys("\<ESC>v".num."l")
-            return ''
+            call cursor(lnum, col+1)
+            call feedkeys("\<BS>\<ESC>vf}")
+            return ""
         endif
     elseif rest =~ '^<\/\w\+>'
         if s:stoplnum != 0

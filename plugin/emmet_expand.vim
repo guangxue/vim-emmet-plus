@@ -29,11 +29,12 @@ call map#nfunc({'<C-b>': 'wrap#comment'})
 call map#exe()
 
 set completeopt=menuone,noinsert,popup
-set completepopup=border:off
+set mouse=i
+set completepopup=border:off,width:60,height:15
 augroup completemenu
     autocmd!
     autocmd TextChangedI *.css,*.html call complete#onCSSTextChanged()
-    autocmd TextChangedI *.py call complete#onPythonTextChanged()
+    autocmd TextChangedI *.py call complete#django#main#entry()
 augroup END
 
 let &cpoptions = s:save_cpo

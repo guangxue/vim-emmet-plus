@@ -23,7 +23,7 @@ function! s:get_fields(fpath)
     return fdlist
 endfun
 
-function! complete#django#model#QuerySet(trigger, fpath)
+function! complete#django#models#QuerySet(trigger, fpath)
     let expr = str#expr()
     let trigger = a:trigger
     let fpath = a:fpath

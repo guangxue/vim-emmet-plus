@@ -26,12 +26,12 @@ endfun
 function! s:__optionals(optionals)
     let expr = str#expr()
     if expr =~ '??$'
-        return complete#utils#Menu(a:optionals, -2)
+        return complete#func#Menu(a:optionals, -2)
     elseif expr =~ '??\w\+$'
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
         let pword_list = complete#django#get#foreach_startswith(a:optionals, pword)
-        return complete#utils#Menu(pword_list, -cur)
+        return complete#func#Menu(pword_list, -cur)
     endif
 endfun
 
@@ -42,7 +42,7 @@ function! s:__attributes(imported)
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
         let pword_list = complete#django#get#foreach_startswith(attr_list, pword)
-        return complete#utils#Menu(pword_list, -cur)
+        return complete#func#Menu(pword_list, -cur)
     else
         return s:__optionals(attr_list)
     endif
@@ -55,15 +55,78 @@ function! s:__parameters(imported)
         let subclass_word = matchstr(expr, '\(\.\)\@<=\w\+')
         if !empty(subclass_word)
             let param_list = complete#django#get#array_for(a:imported.subclass, subclass_word)
-            return complete#utils#Menu(param_list)
+            return complete#func#Menu(param_list)
         endif
         let method_word = matchstr(expr, '\w\+\((\)\@=')
         if !empty(method_word)
             let param_list = complete#django#get#array_for(a:imported.methods, method_word)
-            return complete#utils#Menu(param_list)
+            return complete#func#Menu(param_list)
         endif
     else
         return s:__optionals(option_list)
+    endif
+endfun
+
+function! complete#django#trigger#register(cline, type)
+    let cline = a:cline
+    let imported = matchstr(cline, '\(import\s\)\@<=.\+$')
+    let froms = matchstr(cline, '\(from\s\)\@<=.\+\simport')
+    let load_prefix = substitute(froms, '\.\|\s', '#', 'g')
+    let froms_path = substitute(froms, '\simport', '', 'g')
+    let froms_path = '/'.substitute(froms_path, '\.\|\s', '\/', 'g').'.py'
+    let froms_path = substitute(froms_path, '\/\/', '\/', 'g')
+
+    let trigger_byauto = {}
+    let trigger_bypath = {}
+
+    if imported =~ ','
+        let imports = split(imported, ',\s')
+        for imp in imports
+            if imp =~ 'as'
+                " import path as p, include as incl
+                let tg = split(imp, ' as ')
+                if a:type == 'autoload'
+                    let autofunc = load_prefix.'#'.tg[0]
+                    let trigger_byauto[tg[1]] = autofunc
+                elseif a:type == 'path'
+                    let filepath = expand("%:p:h").froms_path.tg[1]
+                    let trigger_bypath[tg[1]] = expand("%:p:h").froms_path
+				endif
+            else
+                if a:type == 'autoload'
+                    " import path, include
+                    let autofunc = load_prefix.'#'.trim(imp)
+                    let trigger_byauto[trim(imp)] = autofunc
+                elseif a:type == 'path'
+                    let trigger_bypath[trim(imp)] = expand("%:p:h").froms_path
+                endif
+            endif
+        endfor
+    else
+        if imported =~ 'as\s\w\+'
+            " import path as p
+            let imp = split(imported, ' as ')
+            let trigger = imp[1]
+            if a:type == 'autoload'
+                let autofunc = load_prefix.'#'.imp[0]
+                let trigger_byauto[imp[1]] = autofunc
+            elseif a:type == 'path'
+                let trigger_bypath[trigger] = expand("%:p:h").froms_path
+            endif
+        else
+            if a:type == 'autoload'
+                " import path
+                let trigger_byauto[imported] = load_prefix.'#'.imported
+            elseif a:type == 'path'
+                let trigger_bypath[imported] = expand("%:p:h").froms_path
+            endif
+        endif
+    endif
+    if a:type == 'autoload'
+        return trigger_byauto
+    endif
+    if a:type == 'path'
+        return trigger_bypath
     endif
 endfun
 
@@ -71,7 +134,7 @@ function! complete#django#trigger#importedfunc(autofunc)
     let imported = {a:autofunc}()
     if has_key(imported, 'params')
         let param_list = imported.params
-        return complete#utils#Menu(param_list)
+        return complete#func#Menu(param_list)
     endif
 endfun
 
@@ -84,13 +147,13 @@ function! complete#django#trigger#inheritance(trigger, autofunc)
 
     " name = models.|
     if expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.$'
-        return complete#utils#Menu(subclass_list)
+        return complete#func#Menu(subclass_list)
     elseif expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.\w\+('
         " name = models.CharField(|
         call s:__parameters(imported)
     elseif expr =~ '^def\s'
         if expr =~ '^def\s$'
-            call complete#utils#Menu(method_list)
+            call complete#func#Menu(method_list)
         endif
         if expr =~ '($\|,\s$'
             call s:__parameters(imported)

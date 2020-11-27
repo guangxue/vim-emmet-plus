@@ -976,7 +976,6 @@ function! SnippetVariables(snippet)
 endf
 
 function! InStyles()
-
     let foundornot = searchpair('<style>', '', '</style>', 'Wbn') > 0
     if foundornot > 0
         return 1
@@ -1012,9 +1011,7 @@ function! expand#abbr()
     endif
 
     let snippet = html_snippets[snip]
-
     let snippet =  SnippetVariables(snippet)
-
     if snippet  =~ "\n"
         let Tab = repeat(' ', &sw)
         let snippet = SubTabs(snippet)

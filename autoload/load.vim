@@ -475,7 +475,7 @@ function! load#snippets(ftname)
     return s:expand_settings[ft].snippets
 endf
 
-function! load#cssprops()
+function! load#csspropnames()
    let cssvals = values(s:expand_settings.css.snippets) 
    let values = []
    for val in cssvals

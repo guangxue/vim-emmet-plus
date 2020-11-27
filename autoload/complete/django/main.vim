@@ -55,101 +55,28 @@ function! s:findstart(list)
     return matched_list
 endfun
 
-function! s:triggers(cline, type)
-    let cline = a:cline
-    let imported = matchstr(cline, '\(import\s\)\@<=.\+$')
-    let froms = matchstr(cline, '\(from\s\)\@<=.\+\simport')
-    let load_prefix = substitute(froms, '\.\|\s', '#', 'g')
-    let froms_path = substitute(froms, '\simport', '', 'g')
-    let froms_path = '/'.substitute(froms_path, '\.\|\s', '\/', 'g').'.py'
-    let froms_path = substitute(froms_path, '\/\/', '\/', 'g')
-
-    let trigger_byauto = {}
-    let trigger_bypath = {}
-
-    if imported =~ ','
-        let imports = split(imported, ',\s')
-        for imp in imports
-            if imp =~ 'as'
-                " import path as p, include as incl
-                let tg = split(imp, ' as ')
-                if a:type == 'autoload'
-                    let autofunc = load_prefix.'#'.tg[0]
-                    "let s:import_triggers[tg[1]] = autofunc 
-                    let trigger_byauto[tg[1]] = autofunc
-                elseif a:type == 'path'
-                    let filepath = expand("%:p:h").froms_path.tg[1]
-                    "let s:user_models[tg[1]] = expand("%:p:h").froms_path
-                    let trigger_bypath[tg[1]] = expand("%:p:h").froms_path
-				endif
-            else
-                if a:type == 'autoload'
-                    " import path, include
-                    let autofunc = load_prefix.'#'.trim(imp)
-                    "let s:import_triggers[trim(imp)] = autofunc
-                    let trigger_byauto[trim(imp)] = autofunc
-                elseif a:type == 'path'
-                    "let s:user_models[trim(imp)] = expand("%:p:h").froms_path
-                    let trigger_bypath[trim(imp)] = expand("%:p:h").froms_path
-                endif
-            endif
-        endfor
-    else
-        if imported =~ 'as\s\w\+'
-            " import path as p
-            let imp = split(imported, ' as ')
-            let trigger = imp[1]
-            if a:type == 'autoload'
-                let autofunc = load_prefix.'#'.imp[0]
-                "let s:import_triggers[imp[1]] = autofunc
-                let trigger_byauto[imp[1]] = autofunc
-            elseif a:type == 'path'
-                "let s:user_models[trigger] = expand("%:p:h").froms_path
-                let trigger_bypath[trigger] = expand("%:p:h").froms_path
-            endif
-        else
-            if a:type == 'autoload'
-                " import path
-                "let s:import_triggers[imported] = load_prefix.'#'.imported
-                let trigger_byauto[imported] = load_prefix.'#'.imported
-            elseif a:type == 'path'
-                "let s:user_models[imported] = expand("%:p:h").froms_path 
-                let trigger_bypath[imported] = expand("%:p:h").froms_path
-            endif
-        endif
-    endif
-
-    if a:type == 'autoload'
-        return trigger_byauto
-    endif
-    
-    if a:type == 'path'
-        return trigger_bypath
-    endif
-endfun
-
 function! s:__importing(modules)
     let mpath = substitute(a:modules, '\.', '/', 'g')
     let pathstr = 'autoload/'.mpath
     let gpath = globpath(&rtp, pathstr)
-    let dirs = readdir(gpath, {n-> n !~ '\.'})
+    let dirs = readdir(gpath, {n-> n !~ '\.\|_'})
     if empty(dirs)
         let alfn = substitute(mpath, '/', '#', 'g')
         let importall = alfn.'#'.'import#all'
         let importall = substitute(importall, '##', '#', 'g')
         try
             let importall = {importall}()
-            return complete#utils#Menu(importall)
+            return complete#func#Menu(importall)
         catch
 		endtry
     else
-        return complete#utils#Menu(dirs)
+        return complete#func#Menu(dirs)
     endif
     return ''
 endfun
 
 "" __main__
-fun! complete#django#main#entry()
+fun! complete#django#main#func()
     let expr = str#expr()
     let trigger_byauto = {}
     let trigger_bypath = {}
@@ -171,9 +98,10 @@ fun! complete#django#main#entry()
     for line in range(1, line('.')-1)
         let cline = getline(line)
         if cline =~ 'from django.\+import\s\w\+'
-            call extend(trigger_byauto, s:triggers(cline, 'autoload'), 'keep')
+            call extend(trigger_byauto, complete#django#trigger#register(cline, 'autoload'), 'keep')
         elseif cline =~ 'from\s\(django\)\@!\(\w\+\)*\.models\simport'
-            call extend(trigger_bypath, s:triggers(cline, 'path'), 'keep')
+            " from .models import Pet
+            call extend(trigger_bypath, complete#django#trigger#register(cline, 'path'), 'keep')
         endif
     endfor
     
@@ -183,7 +111,7 @@ fun! complete#django#main#entry()
         " TODO:
         "if expr =~ '^'.trigger.'\.$'
         "    let props = {autofunc}().props
-        "    return complete#utils#Menu(props)
+        "    return complete#func#Menu(props)
         "endif
 
         " Trigger imported functions

@@ -1,7 +1,7 @@
 let s:css_snippets = load#snippets('css')
 let s:keywords = []
 let s:menulist = []
-let s:cssprops = load#cssprops()
+let s:cssprops = load#csspropnames()
 
 function! complete#up()
     if pumvisible()

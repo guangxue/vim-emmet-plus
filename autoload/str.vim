@@ -51,17 +51,17 @@ function! str#after()
     return getline('.')[nidx:]
 endf
 
-function! s:matchall(str, pat)
+function! MatchAll(str, pat)
     let lst = []
     call substitute(a:str, a:pat, '\=add(lst, submatch(0))', 'g')
     return [lst, len(lst)]
 endf
 function! str#matchall(str, pat)
-    return s:matchall(a:str, a:pat)[0]
+    return MatchAll(a:str, a:pat)[0]
 endf
 
 function! str#matchcount(str, pat)
-    return s:matchall(a:str, a:pat)[1]
+    return MatchAll(a:str, a:pat)[1]
 endf
 
 function! str#qs(...)
@@ -214,6 +214,7 @@ function! str#after_cursor()
     return getline('.')[str#nidx():]
 endfun
 
+" start from non-whitespace to current cursor position
 function! str#expr()
    let line = getline('.') 
    let idx = 0
@@ -235,7 +236,7 @@ function! str#pword()
 	endif
 endfun
 
-function! str#dotted(str)
+function! str#dots(str)
     return substitute(a:str, '\s', '\.', 'g')
 endfun
 function! str#inside_pairs()
@@ -293,6 +294,15 @@ function! str#searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
 
+function! str#insiderange(start, end)
+    let [startlnum, endlnum] = str#searchrange(a:start, a:end)
+    if startlnum != 0 && endlnum != 0
+        return 1
+    else
+        return 0
+    endif
+endfun
+
 function! str#searchindentrange(clnum)
     let search_indent = (indent(a:clnum) / &sw) - 1
     let [prevlnum, nextlnum] = [a:clnum, a:clnum]
@@ -320,4 +330,3 @@ function! str#clearRegs()
         call setreg(r, [])
     endfor
 endf
-

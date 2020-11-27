@@ -4,10 +4,8 @@ let s:jumprange = []
 
 function! buf#stopline()
     return s:stoplnum
-endf
-function! buf#reset_stopline()
-    let s:stoplnum = 0
-endf
+endfun
+
 function! buf#setlines(lines, before='', after='', tablnum=0, ft='', mode='')
     let before = a:before
     let after = a:after
@@ -97,39 +95,9 @@ function! buf#cursor(caret='')
     endif
 endf
 
-function! s:scandir(dir, mod)
-    let found_dir = ""
-    let mod = a:mod
-
-    for file in readdir(a:dir)
-        if file == 'manage.py'
-            let found_dir = a:dir
-            break
-        endif
-    endfor
-    
-    if !empty(found_dir)
-        return found_dir
-    else
-        let mod .=':h'
-        return mod
-	endif
-endfun
-
 function! buf#ftdetect()
-    let mod = "%:p:h"
-    let found = ""
-    let dir = expand(mod)
-    let mod = s:scandir(dir, mod)
-    while mod =~ ':'
-        let hs = str#matchcount(mod, ':h')
-        if hs > 6
-            break
-        endif
-        let dir = expand(mod)
-        let mod = s:scandir(dir, mod)
-    endwhile
-    if mod =~ '/'
+    let found = findfile("manage.py",".;")
+    if found =~ 'manage.py'
         let &ft = 'htmldjango'
     endif
 endf

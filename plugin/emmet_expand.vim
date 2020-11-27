@@ -33,8 +33,10 @@ set mouse=i
 set completepopup=border:off,width:60,height:15
 augroup completemenu
     autocmd!
-    autocmd TextChangedI *.css,*.html call complete#onCSSTextChanged()
-    autocmd TextChangedI *.py call complete#django#main#entry()
+    autocmd TextChangedI *.css call complete#onCSSTextChanged()
+    autocmd TextChangedI *.html,*.htmldjango call complete#html#main#func()
+    autocmd TextChangedI *.py call complete#django#main#func()
+    autocmd BufWritePost *.py call django#views#parse#saved()
 augroup END
 
 let &cpoptions = s:save_cpo

@@ -1,7 +1,7 @@
-set completefunc=complete#func
+set completefunc=complete#popup#func
 
-call map#ifunc({'<Tab>':'expand#abbr','<C-l>':'complete#listing',
-            \   'feature': {'k':'complete#up()', 'j':'complete#down()'},
+call map#ifunc({'<Tab>':'expand#abbr',
+            \   'feature': {'k':'complete#popup#upkey()', 'j':'complete#popup#downkey()'},
 \})
 call map#exe()
 

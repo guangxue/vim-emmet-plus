@@ -1,9 +1,9 @@
 function! s:template_dir()
-    let current_dir = expand("%:p:h")
+    let current_dir = trim(system("pwd"))
     set path=**;current_dir
     let template_dir = finddir("templates")
     if template_dir == 'templates'
-        let template_dir = expand("%:p:h").'/'.template_dir
+        let template_dir = trim(system("pwd")).'/'.template_dir
     elseif template_dir =~ '^\a'
         let template_dir = current_dir.'/'.template_dir
     endif

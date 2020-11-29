@@ -2,7 +2,6 @@ let s:logfile = complete#django#logfpath()
 let s:insert_fields = {}
 
 function! s:log_fields()
-    "let current_fields = complete#django#models#fields()
     let current_triggers = keys(current_fields)
     let logged_triggers = getlist#fromfile(s:logfile,':', 1)
     let insert_keys = getlist#exclude(logged_triggers, current_triggers)
@@ -38,9 +37,7 @@ function! s:logwriter(render_template, context, fdpath)
             for ll in readfile(s:logfile)
                 call add(loglines, ll)
 			endfor
-            echom line
             if index(loglines, line) < 0 && !empty(line)
-                "echom line
                 call writefile([line], s:logfile, 'a')
             endif
         endif

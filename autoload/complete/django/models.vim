@@ -54,7 +54,7 @@ function! complete#django#models#QuerySet(trigger, fpath)
     let attrs = django#objects#QuerySet().attrs
 
     if expr =~ 'except\s'.trigger.'\.$'
-        return complete#func#Menu(attrs)
+        return complete#popup#menu(attrs)
         " pet = Pet.
     elseif expr =~ '\w\+\s\+=\s\+'.trigger.'\.$'
         call s:get_managers(fpath)
@@ -66,12 +66,12 @@ function! complete#django#models#QuerySet(trigger, fpath)
         " TODO: check words after `trigger` is an Manager instance
         let managers = '\w\+'
         if expr =~ '\w\+\s\+=\s\+'.trigger.'\.'.managers.'\.$'
-            return complete#func#Menu(cm+ms)
+            return complete#popup#menu(cm+ms)
         endif
         " chaining methods
         for c in cm
             if c.word == lm && expr =~ ')\.$'
-                return complete#func#Menu(cm+ms)
+                return complete#popup#menu(cm+ms)
             endif
         endfor
         " chainable methods + methods
@@ -81,12 +81,12 @@ function! complete#django#models#QuerySet(trigger, fpath)
             call extend(s:field_path, {html_trigger: trigger.':'.fpath}, 'force')
             let fields = complete#django#models#fields(fpath, trigger)
             if expr =~ method.word.'($'
-                return complete#func#Menu(fields)
+                return complete#popup#menu(fields)
             elseif expr =~ "order_by('$"
-                return complete#func#Menu(fields)
+                return complete#popup#menu(fields)
             endif
             if expr =~ method.word.'(\w\+__$'
-                return complete#func#Menu(lk)
+                return complete#popup#menu(lk)
             endif
         endfor
     endif

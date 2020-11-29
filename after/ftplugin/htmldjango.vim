@@ -13,7 +13,8 @@ functio! Htmldjango_append(opener, closer)
 endfunction
 
 function! Htmldjango_BS()
-    if str#prevpair() == '  ' && str#pprevpair() == '%%'
+    "if str#prevpair() == '  ' && str#pprevpair() == '%%'
+    if str#pchar().str#nchar() == ' ' && str#pchar().str#nchar() == '%%'
         return bs#double()
     endif
     return bs#Backspace()

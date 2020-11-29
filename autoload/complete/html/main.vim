@@ -22,7 +22,7 @@ function! s:complete_internal_css()
 
     let s:menulist = split(values, '|')
     if len(s:menulist) >= 1
-        return complete#utils#Menu(s:menulist)
+        return complete#popup#menu(s:menulist)
 	endif
 endfun
 
@@ -54,7 +54,7 @@ function! s:complete_fields()
                 if searchpair("{{", "\%#" ,"}}", 'nWz', '', line('.')) && str#pword() =~ for_trigger.'\.$'
                     let fields = get(trigger_dict, in_list, [])
                     call extend(trigger_dict, {html_trigger: fields}, 'force')
-                    return complete#func#Menu(fields)
+                    return complete#popup#menu(fields)
                 endif
             endfor
         endif
@@ -63,7 +63,7 @@ function! s:complete_fields()
             if searchpair("{[{%]", "\%#" ,"[%}]}", 'nWz', '', line('.')) && str#pword() =~ key.'\.$'
                 let fields = get(trigger_dict, key, [])
                 call extend(trigger_dict, {html_trigger: fields}, 'force')
-                return complete#func#Menu(fields)
+                return complete#popup#menu(fields)
             endif
         endfor
 	endif

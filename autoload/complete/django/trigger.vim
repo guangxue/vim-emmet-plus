@@ -26,12 +26,12 @@ endfun
 function! s:__optionals(optionals)
     let expr = str#expr()
     if expr =~ '??$'
-        return complete#func#Menu(a:optionals, -2)
+        return complete#popup#menu(a:optionals, -2)
     elseif expr =~ '??\w\+$'
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
         let pword_list = complete#django#get#foreach_startswith(a:optionals, pword)
-        return complete#func#Menu(pword_list, -cur)
+        return complete#popup#menu(pword_list, -cur)
     endif
 endfun
 
@@ -42,7 +42,7 @@ function! s:__attributes(imported)
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
         let pword_list = complete#django#get#foreach_startswith(attr_list, pword)
-        return complete#func#Menu(pword_list, -cur)
+        return complete#popup#menu(pword_list, -cur)
     else
         return s:__optionals(attr_list)
     endif
@@ -55,12 +55,12 @@ function! s:__parameters(imported)
         let subclass_word = matchstr(expr, '\(\.\)\@<=\w\+')
         if !empty(subclass_word)
             let param_list = complete#django#get#array_for(a:imported.subclass, subclass_word)
-            return complete#func#Menu(param_list)
+            return complete#popup#menu(param_list)
         endif
         let method_word = matchstr(expr, '\w\+\((\)\@=')
         if !empty(method_word)
             let param_list = complete#django#get#array_for(a:imported.methods, method_word)
-            return complete#func#Menu(param_list)
+            return complete#popup#menu(param_list)
         endif
     else
         return s:__optionals(option_list)
@@ -134,7 +134,7 @@ function! complete#django#trigger#importedfunc(autofunc)
     let imported = {a:autofunc}()
     if has_key(imported, 'params')
         let param_list = imported.params
-        return complete#func#Menu(param_list)
+        return complete#popup#menu(param_list)
     endif
 endfun
 
@@ -147,13 +147,13 @@ function! complete#django#trigger#inheritance(trigger, autofunc)
 
     " name = models.|
     if expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.$'
-        return complete#func#Menu(subclass_list)
+        return complete#popup#menu(subclass_list)
     elseif expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.\w\+('
         " name = models.CharField(|
         call s:__parameters(imported)
     elseif expr =~ '^def\s'
         if expr =~ '^def\s$'
-            call complete#func#Menu(method_list)
+            call complete#popup#menu(method_list)
         endif
         if expr =~ '($\|,\s$'
             call s:__parameters(imported)

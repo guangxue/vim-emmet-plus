@@ -572,8 +572,6 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
     return last_expand
 endf
 
-
-
 " __matched_before_after
 function! s:matched_before_after(ptext, matched)
     let ptext_len = len(str#ptext())
@@ -825,8 +823,8 @@ endf
 
 " __jumping
 function! s:jumping()
-    let rest = str#after()
-    let b_cur = trim(str#before())
+    let rest = str#aftercursor()
+    let b_cur = trim(str#beforecursor())
     let ptext = str#ptext()
     let c_lnum = line('.')
     let stopline = c_lnum + s:stoplnum
@@ -893,7 +891,7 @@ function! Expand_abbr(matched_abbr)
     let jumping = s:jumping()
 
     if !empty(a:matched_abbr) && jumping == 'nope!'
-        " "1 - get multiplied abbr"
+        " "1 -get multiplied abbr"
         let multiplied_abbr = s:multiple_abbr(a:matched_abbr)
 
         " "2 -extract groups of abbr"

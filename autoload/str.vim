@@ -40,22 +40,12 @@ function! str#last2chars()
     return str#ppchar().str#pchar()
 endfun
 
-function! str#before()
-    let pidx = str#pidx()
-    let front = getline('.')[0:pidx]
-    return front
-endf
-
-function! str#after()
-    let nidx = str#nidx()
-    return getline('.')[nidx:]
-endf
-
 function! MatchAll(str, pat)
     let lst = []
     call substitute(a:str, a:pat, '\=add(lst, submatch(0))', 'g')
     return [lst, len(lst)]
 endf
+
 function! str#matchall(str, pat)
     return MatchAll(a:str, a:pat)[0]
 endf
@@ -111,7 +101,7 @@ function! str#isdigit(char)
     endif
 endf
 
-" previous text from pchar including leading whitspace
+" previous text from pchar including leading whitespace
 function! str#ptext()
     let pidx = s:get_char(0)[0]
     if pidx < 0
@@ -119,7 +109,6 @@ function! str#ptext()
     else
         return getline('.')[0:pidx]
     endif
-
 endf
 
 "previous text from ppchar including whitespace
@@ -170,47 +159,14 @@ function! str#ptext_has_two(ptext, delim)
         return 1
     else
         return ""
-endf
-
-function! str#prevpair()
-    return str#pchar().str#nchar()
-endf
-
-function! str#pprevpair()
-    return str#ppchar().str#nnchar()
-endf
-
-function! str#before_after(str="")
-    let str = a:str
-    let before_cursor = str#before()
-    let ptext = str#ptext()
-
-    if !empty(before_cursor) && empty(str)
-        let get_str = split(before_cursor)
-        let str = len(get_str) > 0 ? get_str[-1] : get_str
     endif
-
-    let ptext_len = len(ptext)
-    let str_len = len(str)
-    let idx = ptext_len - str_len
-    
-    let before_str = ""
-    let after_str = ""
-    if idx != 0
-        let before_str = getline('.')[0:idx-1]
-    else
-        let before_str = ""
-    endif
-
-    let after_str = getline('.')[col('.')-1:]
-    return [str, before_str, after_str]
 endf
 
-function! str#before_cursor()
+function! str#beforecursor()
     return getline('.')[:str#pidx()]
 endfun
 
-function! str#after_cursor()
+function! str#aftercursor()
     return getline('.')[str#nidx():]
 endfun
 
@@ -228,17 +184,42 @@ function! str#expr()
 endfun
 
 function! str#pword()
-    let before = str#before_cursor()
+    let before = str#beforecursor()
     if !empty(before)
-        let split_before = split(before)
-        let pword = get(split_before, -1, v:none)
+        let split_before = split(before, ' ', 1)
+        let last_before = get(split_before, -1, v:none)
+        let pword = matchstr(last_before, '[0-9_@A-Za-z\.(]\+$')
         return pword
 	endif
+endfun
+
+" get string before after pword
+function! str#pwordlr(pword='')
+    "let str = a:str
+    let pword = a:pword
+    let before = str#beforecursor()
+    let ptext = str#ptext()
+
+    let ptext_len = len(ptext)
+    let pword_len = len(pword)
+    let idx = ptext_len - pword_len
+    
+    let before_pword = ""
+    let after_pword = ""
+    if idx != 0
+        let before_pword = getline('.')[0:idx-1]
+    else
+        let before_pword = ""
+    endif
+
+    let after_pword = getline('.')[col('.')-1:]
+    return [before_pword, after_pword]
 endfun
 
 function! str#dots(str)
     return substitute(a:str, '\s', '\.', 'g')
 endfun
+
 function! str#inside_pairs()
     let pchar = str#pchar()
     let nchar = str#nchar()
@@ -260,6 +241,11 @@ function! str#inside_pairs()
     else
         return ""
     endif
+endf
+
+"" range search
+function! str#searchrange(start, end)
+    return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
 
 function! str#outer_pair(start, end)
@@ -288,20 +274,6 @@ endf
 function! str#startc_searchrange(start, end)
     return [searchpair(a:start, '\%#', a:end, 'bcnW'), searchpair(a:start, '\%#', a:end, 'nW')]
 endf
-
-"" range search
-function! str#searchrange(start, end)
-    return [searchpair(a:start, '\%#', a:end, 'bnW'), searchpair(a:start, '\%#', a:end, 'nW')]
-endf
-
-function! str#insiderange(start, end)
-    let [startlnum, endlnum] = str#searchrange(a:start, a:end)
-    if startlnum != 0 && endlnum != 0
-        return 1
-    else
-        return 0
-    endif
-endfun
 
 function! str#searchindentrange(clnum)
     let search_indent = (indent(a:clnum) / &sw) - 1

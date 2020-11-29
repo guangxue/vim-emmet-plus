@@ -16,10 +16,9 @@ function! s:get_indent(snippet)
 endfunction
 
 function! snippet#vim()
-    let ba_str = str#before_after()
-    let snip = ba_str[0]
-    let before = ba_str[1]
-    let after = ba_str[2]
+    let snip = str#pword()
+    let before = str#pwordlr(snip)[0]
+    let after = str#pwordlr(snip)[1]
 
     if empty(snip)
         return "\<Tab>"
@@ -41,26 +40,26 @@ function! snippet#vim()
     if has_key(s:vim_snippets, snip)
         let snippet = s:vim_snippets[snip]
         let snippet = s:get_indent(snippet)
-        call buf#setlines(snippet, before, after, line('.'))
+        call buf#setlines(snippet, before, after)
         return buf#cursor('$0')
     else
         return "\<Tab>"
     endif
 endf
 
-
 function! snippet#htmldjango()
-    let ba_str = str#before_after()
-    let snip = len(ba_str[0]) == 0 ? "" : ba_str[0]
-    let before = ba_str[1]
-    let after = ba_str[2]
-    let beforec = str#before()
+    let snip = str#pword()
+    let before = str#pwordlr(snip)[0]
+    let after = str#pwordlr(snip)[1]
+    let beforec = str#beforecursor()
+    let tablnum = line('.')
 
-    call buf#jumpnext(snip, '\${\d', '$', 'hi')
+    call buf#jumpnext('\(\w\s\)\@<=\s%', ' ', 'i')
+
     if has_key(s:hd_snippets, snip)
         let snippet = s:hd_snippets[snip]
         let snippet = s:get_indent(snippet)
-        call buf#setlines(snippet, before, after)
+        call buf#setlines(snippet, before, after, tablnum)
         return buf#cursor('${0}')
     else
         let pipcmd = matchstr(beforec, '\w\+|$')
@@ -76,21 +75,20 @@ function! snippet#htmldjango()
                 let newline = beforec[0:before_idx].append_snippet.restline[len(inqs):]
                 call setline('.', newline)
                 return "\<ESC>"
-			endif
-		endif
+	        endif
+	    endif
         return expand#abbr()
     endif
 endf
 
 function! snippet#css()
-    let ba_str = str#before_after()
-    let snip = len(ba_str[0]) == 0 ? "" : ba_str[0]
-    let before = ba_str[1]
-    let after = ba_str[2]
+    let snip = str#pword()
+    let before = str#pwordlr(snip)[0]
+    let after = str#pwordlr(snip)[1]
     let tablnum = line('.')
     let scol = col('.')
 
-    call buf#jumpnext(snip, '\${\d:\=', '$', 'hi')
+    call buf#jumpnext('\${\d:\=', '$', 'hi')
     let snippet = get(s:css_snippets, snip, '')
 
     if empty(snippet)
@@ -104,12 +102,11 @@ function! snippet#css()
         let values = split(propvals, '|')
         call buf#setlines(propname, before, after, tablnum, 'css')
         call buf#cursor('${0}')
-        call feedkeys("\<C-X>\<C-U>")
-        return ''
+        return complete#popup#menu(values)
     endif 
 
     let snippet = s:get_indent(snippet)
     call buf#setlines(snippet, before, after, tablnum, 'css')
     call buf#cursor('${0}')
     return ''
-endf
+endfun

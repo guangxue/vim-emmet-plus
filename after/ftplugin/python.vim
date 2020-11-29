@@ -3,7 +3,6 @@
 """"""""""""""""""""""""""""""""""""""""""""""
 setlocal expandtab
 setlocal shiftwidth=4
-set completefunc=complete#func
 let g:pyindent_open_paren = 'shiftwidth()/shiftwidth'
 
 function! s:is_fstr()

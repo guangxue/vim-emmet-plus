@@ -10,8 +10,7 @@ function! buf#setlines(lines, before='', after='', tablnum=0, ft='', mode='')
     let before = a:before
     let after = a:after
     let lines = a:lines
-    let s:tablnum = a:tablnum
-
+    let tablnum = empty(a:tablnum) ? line('.') : a:tablnum
     let lines = split(lines, '\n')
 
     if empty(a:mode)
@@ -28,7 +27,7 @@ function! buf#setlines(lines, before='', after='', tablnum=0, ft='', mode='')
             let eol = lines[-1].after
             let nextlines = lines[1:-2]
             let nextlines = add(nextlines, eol)
-            let s:stoplnum = s:tablnum + len(nextlines)
+            let s:stoplnum = tablnum + len(nextlines)
             call setline('.', line0)
             call append('.', nextlines)
         endif
@@ -49,21 +48,25 @@ function! buf#setlines(lines, before='', after='', tablnum=0, ft='', mode='')
     endif
 endf
 
-function! buf#jumpnext(snip, pat, trigger, action)
-    if empty(a:snip)
-        return "\<Tab>"
-    endif
-
+" Jump to {pat}
+" if pchar equals to {trigger}
+" then do {action}, 'hi': highlight, 'del': delete 4chars
+function! buf#jumpnext(pat, trigger, action)
     if index(s:jumprange, s:tablnum) < 0 && s:stoplnum > 0
         let s:stoplnum = 0
     endif
+
+    " search lnum and colnum for pattern-> a:pat
     let [lnum, col] = searchpos(a:pat, 'Wz', s:stoplnum)
     if lnum == 0
         let s:stoplnum = 0
     endif
+    " move cursor to the matched position
     call cursor(lnum, col)
-    let char = getline(lnum)[col-1]
-    if char == a:trigger
+    " get previous char
+    let pchar = getline(lnum)[col-1]
+
+    if pchar == a:trigger
         if a:action == 'hi'
             call cursor(lnum, col+1)
             call feedkeys("\<BS>\<ESC>vf}")
@@ -72,6 +75,11 @@ function! buf#jumpnext(snip, pat, trigger, action)
             call cursor(lnum, col)
             call feedkeys("\<BS>")
             silent! normal! 4x
+        endif
+        if a:action == 'i'
+            call cursor(lnum, col)
+            call feedkeys("\<ESC>")
+            return ''
         endif
     endif 
 endf

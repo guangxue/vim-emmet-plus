@@ -10,7 +10,7 @@ endfun
 
 function! OnImportSection()
     let lnum = line('.')
-    let bfc = str#before_cursor()->matchstr('from django')
+    let bfc = str#beforecursor()->matchstr('from django')
     for ln in range(lnum, 1, -1)
         if !PrevClasslnum() && !empty(getline(ln)->matchstr('from django')) && !empty(bfc)
             return 1
@@ -66,11 +66,11 @@ function! s:__importing(modules)
         let importall = substitute(importall, '##', '#', 'g')
         try
             let importall = {importall}()
-            return complete#func#Menu(importall)
+            return complete#popup#menu(importall)
         catch
 		endtry
     else
-        return complete#func#Menu(dirs)
+        return complete#popup#menu(dirs)
     endif
     return ''
 endfun
@@ -111,7 +111,7 @@ fun! complete#django#main#func()
         " TODO:
         "if expr =~ '^'.trigger.'\.$'
         "    let props = {autofunc}().props
-        "    return complete#func#Menu(props)
+        "    return complete#popup#menu(props)
         "endif
 
         " Trigger imported functions

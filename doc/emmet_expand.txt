@@ -81,44 +81,44 @@ This section is about autoload helper functions that might be used in the
 future. So some explanation needed.
 
 string manipulation:                     *str-functions* *str-helper-functions*
-    str#pchar()	                get previous char at current cursor
-    str#nchar()	                get next char at current cursor
-    str#pindx()	                get previous index at current cursor
-    str#nindx()	                get next index at current cursor
+    str#pchar()                 get previous char at current cursor
+    str#nchar()                 get next char at current cursor
+    str#pindx()                 get previous index at current cursor
+    str#nindx()                 get next index at current cursor
     str#ppchar()                get the char from previous char at current cursor
     str#nnchar()                get the char from next char at current cursor
     str#prev2chars()            get previous two chars from two chars before 
     str#last2chars()            get previous two chars from current cursor
     str#next2chars()            get next two characters at current cursor
-    str#matchall()		get a list contains all matched pattern
-    str#matchcount()		get the sum of all matched pattern
-    str#qs()			return esacaped single or double quotes
-    str#wrap_qs()		return wrap with '()' that return from
-				str#qs()
-    str#isalpha()		return True if first char is alpha
-    str#isdigit()		return True if first char is digit
-    str#ptext()			get previous text until current cursor position
-				including whitespaces
-    str#pptext()		get previous text until previous cursor
-				position including whitespaces
-    str#startswith()		return True if a str passed startswith a char
-    str#ptext_has()		return True if ptext return from str#ptext()
-				contains specific char
-    str#ptext_has_two()		return True if ptext return from str#ptext()
-				contains two specific chars
-    str#beforecursor()		return a string from begining of line to
-				current cursor position
-    str#aftercursor()		return a string from cursor position util end
-				of current line
-    str#expr()			return a string from first non-blank char to
-				current cursor position
-    str#pword()			return a string from cursor position to first
-				nearest word '[0-9A-Za-z@\.(]\+'
-    str#pwordlr()		return a list of strings that on the left side
-				of `pword` and right side of `pword` on the
-				current line
-    str#dots()			return a string that replaced space with '.'
-    str#inside_pairs()		return True if current cursor inside pairs
+    str#matchall()              get a list contains all matched pattern
+    str#matchcount()            get the sum of all matched pattern
+    str#qs()                    return esacaped single or double quotes
+    str#wrap_qs()               return wrap with '()' that return from
+                                str#qs()
+    str#isalpha()               return True if first char is alpha
+    str#isdigit()               return True if first char is digit
+    str#ptext()                 get previous text until current cursor position
+                                including whitespaces
+    str#pptext()                get previous text until previous cursor
+                                position including whitespaces
+    str#startswith()            return True if a str passed startswith a char
+    str#ptext_has()             return True if ptext return from str#ptext()
+                                contains specific char
+    str#ptext_has_two()         return True if ptext return from str#ptext()
+                                contains two specific chars
+    str#beforecursor()          return a string from begining of line to
+                                current cursor position
+    str#aftercursor()           return a string from cursor position util end
+                                of current line
+    str#expr()                  return a string from first non-blank char to
+                                current cursor position
+    str#pword()                 return a string from cursor position to first
+                                nearest word '[0-9A-Za-z@\.(]\+'
+    str#pwordlr()               return a list of strings that on the left side
+                                of `pword` and right side of `pword` on the
+                                current line
+    str#dots()                  return a string that replaced space with '.'
+    str#inside_pairs()          return True if current cursor inside pairs
     str#searchrange()
     str#outer_pair()
     str#startlnum_for()
@@ -129,13 +129,17 @@ string manipulation:                     *str-functions* *str-helper-functions*
     str#searchindentrange()
     str#clearRegs()
 
-list manipulation:		      *getlist-functions* *getlist-helper-functions*
-    getlist#fromfile()		get a list from a file split each line with
-				sepecified pattern
-    getlist#fromlines()		get a list from a range of lines
-    getlist#exclude()		get a list from a list excluding certain
-				elements according user passed list
-    getlist#odd()		get an odd elements from a list
-    getlist#even()		get an even elements from a list
+list manipulation:                     *getlist-functions* *getlist-helper-functions*
+    getlist#fromfile()          get a list from a file split each line with sepecified pattern
+    getlist#fromlines()         get a list from a range of lines
+    getlist#exclude()           get a list from a list excluding certain
+                                elements according user passed list
+    getlist#odd()               get an odd elements from a list
+    getlist#even()              get an even elements from a list
 
-vim:tw=78:ts=8:noet:ft=help:norl:
+Insert mode completion:                *complete-items-functions* *complete-helper-functions*
+    complete#items#startswith()
+    complete#items#equals()
+    complete#items#user_data()
+
+vim:tw=78:ts=8:noet:ft=help:norl:autoindent:

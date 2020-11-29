@@ -30,7 +30,7 @@ function! s:__optionals(optionals)
     elseif expr =~ '??\w\+$'
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
-        let pword_list = complete#django#get#foreach_startswith(a:optionals, pword)
+        let pword_list = complete#items#startswith(a:optionals, pword)
         return complete#popup#menu(pword_list, -cur)
     endif
 endfun
@@ -41,7 +41,7 @@ function! s:__attributes(imported)
     if expr =~ '^\w\+'
         let pword = matchstr(expr, '\w\+$')
         let cur = len(pword) + 2
-        let pword_list = complete#django#get#foreach_startswith(attr_list, pword)
+        let pword_list = complete#items#startswith(attr_list, pword)
         return complete#popup#menu(pword_list, -cur)
     else
         return s:__optionals(attr_list)
@@ -54,12 +54,12 @@ function! s:__parameters(imported)
     if expr =~ '($\|,\s$'
         let subclass_word = matchstr(expr, '\(\.\)\@<=\w\+')
         if !empty(subclass_word)
-            let param_list = complete#django#get#array_for(a:imported.subclass, subclass_word)
+            let param_list = complete#items#user_data(a:imported.subclass, subclass_word)
             return complete#popup#menu(param_list)
         endif
         let method_word = matchstr(expr, '\w\+\((\)\@=')
         if !empty(method_word)
-            let param_list = complete#django#get#array_for(a:imported.methods, method_word)
+            let param_list = complete#items#user_data(a:imported.methods, method_word)
             return complete#popup#menu(param_list)
         endif
     else

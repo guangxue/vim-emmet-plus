@@ -51,5 +51,5 @@ endfunction
 
 
 call map#pairs(['():'], 'python')
-call map#ifunc({'append':'PyAppend','<BS>':'PyBackspace', 'feature': {'k':'complete#up()', 'j':'complete#down()'}})
+call map#ifunc({'append':'PyAppend','<BS>':'PyBackspace', 'feature': {'k':'complete#popup#upkey()', 'j':'complete#popup#downkey()'}})
 call map#exe()

@@ -110,7 +110,7 @@ function! s:uncomment_tags()
         else
             let [startlnum, endlnum] = str#startc_searchrange('<!-- <'.tagname, '</'.tagname.'> -->')
         endif
-    elseif str#before_cursor()->matchstr(s:pat_str) =~ '^<!'
+    elseif str#beforecursor()->matchstr(s:pat_str) =~ '^<!'
         let [startlnum, endlnum] = str#searchrange('<!--', '-->')
     else
         let [startlnum, endlnum] = str#searchindentrange(line('.'))
@@ -137,7 +137,7 @@ function! s:comment_starttag(clnum)
     let tagname = getline(a:clnum)->matchstr(s:pat_str)->matchstr(s:pat_opentag)
     let inline_elements = load#html_inline()
     "" comment inline-elements
-    if str#after_cursor() =~ '^<\w\+'
+    if str#aftercursor() =~ '^<\w\+'
         "" comment cursor-next-to-tag
         if index(inline_elements, tagname) >= 0
             let startlnum = a:clnum
@@ -145,7 +145,7 @@ function! s:comment_starttag(clnum)
         else
             let [startlnum, endlnum] = str#startc_searchrange('<'.tagname, '</'.tagname)
         endif
-    elseif str#before_cursor() =~ '\S' && str#after_cursor() =~ '\w\+'
+    elseif str#beforecursor() =~ '\S' && str#aftercursor() =~ '\w\+'
         "" comment cursor-on-text
         let clinestr = getline(a:clnum)->matchstr(s:pat_str)
         "" comment one-line-tag
@@ -244,7 +244,7 @@ function! s:toggle_emptyline(clnum)
 endfun
 
 " __main__ "
-function! lang#html#toggle_comment()
+function! lang#html#togglecomment()
     let clnum = line('.')
     let clinestr = getline(clnum)->matchstr(s:pat_str)
 

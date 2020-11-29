@@ -72,7 +72,7 @@ function! wrap#comment()
     let clinestr = matchstr(cline, pat_str)
 
     if ft =~ 'html'
-        return lang#html#toggle_comment()
+        return lang#html#togglecomment()
     else
         if str =~ '^\/\*\='
             if str[1] == '*'

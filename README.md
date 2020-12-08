@@ -76,7 +76,7 @@ h1{{{ post.title }}}+p.date{{{ post.published }} by {{ post.author }}}
 
 Parse {} inside attributes:
 ```django
-a[href='{{{ post.get_absolute_url }}}']{{{ post.title }}}
+a[href='{{ post.get_absolute_url }}']{{{ post.title }}}
 ```
 
 ```django

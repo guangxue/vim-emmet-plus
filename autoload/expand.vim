@@ -2,7 +2,7 @@
 " File name     : expand.vim
 " Author        : guangxue
 " Verson        : v0.1
-" Last modified : 23 Oct 2020
+" Last modified : 8 Dec 2020
 "=====================================================================
 
 let s:save_cpo = &cpoptions
@@ -234,18 +234,20 @@ function! s:matchstr_attr(stripd_emmet)
     endif
     
     " Example:  a[href='{{{ post.get_absolute_url }}}']{{{ post.title }}}
-    " -> a[href=$text:3$]
+    " -> a[href=,text:2,]
+    "  "parse_EmText"
     let midx = 0
-    while matched_attr =~ '$text:'
+    while matched_attr =~ ',text:'
         if midx > 10
             break
         endif
-        let emidx = matchstr(matched_attr, '\(\$text:\)\@<=\d\+')
-        let matched_attr = substitute(matched_attr, '\$text:\d\+\$', s:EmText[emidx], '')
+        let emidx = matchstr(matched_attr, '\(,text:\)\@<=\d\+')
+        let matched_attr = substitute(matched_attr, ',text:\d\+,', s:EmText[emidx], '')
         let midx += 1
     endwhile
 
-    while matched_attr =~ '\$qs:\d\+\$'
+    " "$qs:0$"
+    while matched_attr =~ '\$qs:\d\+'
         if maxdepth > 10
             break
         endif
@@ -264,12 +266,13 @@ endf
 function! s:parse_texts()
     let idx = 0
     for emt in s:EmText
-        while s:EmText[idx] =~ '\$text:'
+        " "mkr:text:"
+        while s:EmText[idx] =~ ',text:'
             if idx > 10
                 break
             endif
-            let cid = matchstr(s:EmText[idx], '\(\$text:\)\@<=\d\+')
-            let s:EmText[idx] = substitute(s:EmText[idx], '\$text\:\d\+\$', s:EmText[cid], '')
+            let cid = matchstr(s:EmText[idx], '\(,text:\)\@<=\d\+')
+            let s:EmText[idx] = substitute(s:EmText[idx], ',text\:\d\+,', s:EmText[cid], '')
         endwhile
         let idx += 1
     endfor

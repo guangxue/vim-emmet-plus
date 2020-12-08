@@ -461,7 +461,13 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         endif
         let text = matchstr(abbr_str, pat_elm_text)
         call add(s:EmText, text)
-        let abbr_str = substitute(abbr_str, pat_elm_text, ',text:'.idx.',', '')
+        let lenEmt = len(s:EmText)
+        if len(s:EmText) > 0
+            let inum = lenEmt-1
+            let abbr_str = substitute(abbr_str, pat_elm_text, ',text:'.inum.',', '')
+        else
+            let abbr_str = substitute(abbr_str, pat_elm_text, ',text:0,', '')
+        endif
         let idx += 1
     endwhile
 
@@ -523,6 +529,7 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
 
         " if curr_expand outputs <div>${NL}</div>
         " change it to <div></div>${NL}
+
         if curr_cmd == "${NL}"
             if curr_expand =~ '\(<\/\w\+>\|<\/\w\+\*\d\+>\)'
                 let curr_expand = substitute(curr_expand, '\${NL}', '', 'g')

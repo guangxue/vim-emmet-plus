@@ -266,7 +266,7 @@ endf
 function! s:parse_texts()
     let idx = 0
     for emt in s:EmText
-        " "mkr:text:"
+        "mkr:text:"
         while s:EmText[idx] =~ ',text:'
             if idx > 10
                 break
@@ -289,7 +289,7 @@ function! s:matchstr_text(matched_emmet)
     endif
 
     let final_text = matched_text[1:-2]
-    " "mkr:text"
+    "mkr:text"
     if final_text =~ ',text:'
         call s:parse_texts()
         let idx = matchstr(final_text, '\d\+')
@@ -309,7 +309,7 @@ endf
 
 "__expand_base"
 function! s:expand_base(matched_base)
-    " "mkr:grp:"
+    "mkr:grp:"
     if a:matched_base =~ ',grp:'
         let grp_idx = matchstr(a:matched_base, '\d')
         let grp_cmd = matchstr(a:matched_base, '\${\(NL\|child\)}')
@@ -389,7 +389,7 @@ function! s:parse_groups(last_expand)
 
     " - After parsed each value in grouplist
     " ":substitute": 'grouplist:5' pat with parsed_abbr in s:grouplist
-    " "mkr:grp:1"
+    "mkr:grp:1"
     for idx in range(grouplen)
         if s:grouplist[idx].val =~ ',grp:'
             let grp_idx = matchstr(s:grouplist[idx].val, '\(,grp:\)\@<=\d\+')
@@ -400,13 +400,13 @@ function! s:parse_groups(last_expand)
     " - return final expand_abbr
     " ":substitute" last_expand with specific index of grouplist
     let idx = 0
-    " "mkr:grp:2"
+    "mkr:grp:2"
     while last_expand =~ ',grp:'
         if idx > 10
             break
         endif
         let grp_idx = matchstr(last_expand, '\(\:\)\@<=\d\+')
-        " "mkr:grp:2"
+        "mkr:grp:2"
         let matched_gname = matchstr(last_expand, ',grp:\d\+')
         if matched_gname =~'grp'
             let last_expand = substitute(last_expand, ',grp:\d\+,', s:grouplist[grp_idx].val, '')
@@ -417,19 +417,9 @@ function! s:parse_groups(last_expand)
     return last_expand
 endf
 
-function! Sanitize_abbr(polished_abbr)
-    if a:polished_abbr =~ '^[(.!#>+]'
-        return a:polished_abbr[1:]
-    elseif a:polished_abbr =~ '^\d'
-        return ""
-    else
-        return a:polished_abbr
-    endif
-endf
-
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " function    : " __parse_abbr() "
-" Purpose     : parse single abbr -> div>grouplist[1]+p>a
+" Purpose     : parse single abbr -> div>,grp:1,+p>a
 " tabs        : number, tabsize for left side indent.
 " parsegroups : if parse groups, leading ltabs is discard.
 " last_cmd    : if last_expand has token ${child} -> ltabs+1,
@@ -438,21 +428,37 @@ endf
 "               replace it with curr_expand, and add 1 tabsize
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
-    let abbr_str = Sanitize_abbr(a:matched_abbr)
+
+    if a:matched_abbr =~ '^[(.!#>+]'
+        return a:matched_abbr
+    elseif a:matched_abbr =~ '^\d'
+        return ""
+    else
+        let abbr_str = a:matched_abbr
+    endif
+
     if empty(abbr_str)
         return a:matched_abbr
     endif
 
-    " extract emmet attributes []
-    let pat_attr = '\(\(\w\+\)\@<=\[.\+\]\([{}+>]\)\@=\)\|\(\w\+\)\@<=\[.\+\]'
+    " "#1. extract []"
+    " FIXED: extract emmet attributes []
+    if abbr_str =~ '\(]>\)\|\(]+\)'
+        let pat_attr = '\(\w\+\)\@<=\[.\+\]\([+>]\)\@='
+    elseif abbr_str =~ '\(\]{\)'
+        let pat_attr = '\(\w\+\)\@<=\[.\+\]\([{}+>]\)\@='
+    else
+        let pat_attr = '\(\w\+\)\@<=\[.\+\]'
+    endif
+
     let m_attr = str#matchall(abbr_str, pat_attr)
     let attrlst = str#matchcount(abbr_str, pat_attr)
     for ix in range(attrlst)
-        " "mkr:attr:0"
+        "mkr:attr:0"
         let abbr_str = substitute(abbr_str, pat_attr, ',attr:'.ix.',', '')
     endfor
 
-    " extract {} 
+    " "#2. extract {}"
     let idx = 0
     let pat_elm_text = '\({[^{}]\{-}}\)'
     while abbr_str =~ '{'
@@ -471,23 +477,27 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         let idx += 1
     endwhile
 
+    " "#3. parse +,>"
     let abbr_str = substitute(abbr_str, '>', "{${child}}%", 'g')
     let abbr_str = substitute(abbr_str, '+', "{${NL}}%", 'g')
 
+    " "#4. consuming m_attr"
     let max = 0
-    " "mkr:attr"
     while abbr_str =~ ',attr:'
+        "mkr:attr"
         if max > 10
             break
 		endif
         let idx = matchstr(abbr_str, '\(,attr:\)\@<=\d\+')
-        " "mkr:attr"
+        "mkr:attr"
         let abbr_str = substitute(abbr_str, ',attr:\d\+,', m_attr[idx], '')
     endwhile
 
+    " "#5 split +,>"
     let abbr_list = split(abbr_str, '%')
-    " - Tab setup:
-    " set ltabs globally in function, so that
+
+    " "#6 Tabsize setup"
+    " set ltabs inside parse_abbr function, so that
     " each loop can track current `ltabs` size
     let ltabs = a:tabs
 
@@ -504,7 +514,7 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         let CMD = matchstr(abbr, '${\w\+}')
         " arrange abbr orders
         if empty(CMD)
-            " "mkr:text"
+            "mkr:text"
             let abbr = substitute(abbr, '\zs,text:\d\+,', '{'.EmText.'}', '')
         else
             let abbr = substitute(abbr, '\zs,text:\d\+,', '', '')
@@ -575,7 +585,7 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         " get: correct grouplist index 
         " set: correct ltabs for grouplist
         " before: for-loop ended
-        " "mkr:grp"
+        "mkr:grp"
         if abbr =~ ',grp:'
             let grp_idx = matchstr(abbr, '\(:\)\@<=\d') 
             if empty(s:grouplist[grp_idx].tabs)
@@ -752,7 +762,7 @@ function! s:extract_groups(multiplied_abbr)
                 "#2": add '(li>a)*2' to grouplist without trim ()
                 call add(s:grouplist, {'val': matched_group, 'tabs':''})
             endif
-            " "mkr:grp:0"
+            "mkr:grp:0"
             let refined_abbr = substitute(refined_abbr, s:pat_emmet_group, ',grp:'.gidx.',', '')
             let gidx += 1
         else
@@ -1022,8 +1032,12 @@ function! expand#abbr()
         if expanded == "\<Tab>"
             return "\<Tab>"
         endif
-        call Setlines(expanded)
-        return SetCursor()
+        if !empty(expanded)
+            call Setlines(expanded)
+            return SetCursor()
+        else
+            return "\<Tab>"
+		endif
     endif
 
     let snippet = html_snippets[snip]

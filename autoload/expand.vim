@@ -286,10 +286,11 @@ function! s:matchstr_text(matched_emmet)
     endif
 
     let final_text = matched_text[1:-2]
-    if final_text =~ '\$text:'
+    " "mkr:text"
+    if final_text =~ ',text:'
         call s:parse_texts()
         let idx = matchstr(final_text, '\d\+')
-        let final_text = substitute(final_text, '\$text\:\d\+\$', s:EmText[idx], '')
+        let final_text = substitute(final_text, ',text\:\d\+,', s:EmText[idx], '')
         if final_text =~ '\${\w\+}'
             let split_text = split(final_text, '\${')
             let final_text = split_text[0][1:-2]."${".split_text[1]
@@ -305,14 +306,16 @@ endf
 
 "__expand_base"
 function! s:expand_base(matched_base)
-    if a:matched_base =~ '\$grouplist'
+    " "mkr:grp:"
+    if a:matched_base =~ ',grp:'
         let grp_idx = matchstr(a:matched_base, '\d')
         let grp_cmd = matchstr(a:matched_base, '\${\(NL\|child\)}')
         " last group with tail nest '>', in fact should be '+'
         if grp_cmd == "${child}"
             let grp_cmd = "${NL}"
         endif
-        let grp_ret = "$grouplist:".grp_idx.'$'.grp_cmd
+        " return group str: ",grp:idx,"
+        let grp_ret = ",grp:".grp_idx.','.grp_cmd
         return grp_ret
     endif
 
@@ -383,31 +386,31 @@ function! s:parse_groups(last_expand)
 
     " - After parsed each value in grouplist
     " ":substitute": 'grouplist:5' pat with parsed_abbr in s:grouplist
+    " "mkr:grp:1"
     for idx in range(grouplen)
-        if s:grouplist[idx].val =~ '\$grouplist:\$'
-            let grp_idx = matchstr(s:grouplist[idx].val, '\(\$grouplist:\)\@<=\d\+')
-            let s:grouplist[idx].val = substitute(s:grouplist[idx].val, '\$grouplist:\d\+\$', s:grouplist[grp_idx].val, '')
+        if s:grouplist[idx].val =~ ',grp:'
+            let grp_idx = matchstr(s:grouplist[idx].val, '\(,grp:\)\@<=\d\+')
+            let s:grouplist[idx].val = substitute(s:grouplist[idx].val, ',grp:\d\+,', s:grouplist[grp_idx].val, '')
         endif
     endfor
 
-    
     " - return final expand_abbr
     " ":substitute" last_expand with specific index of grouplist
     let idx = 0
-    while last_expand =~ '\$grouplist'
+    " "mkr:grp:2"
+    while last_expand =~ ',grp:'
         if idx > 10
             break
         endif
         let grp_idx = matchstr(last_expand, '\(\:\)\@<=\d\+')
-        let grp_idx = trim(grp_idx, '[]')
-        let matched_gname = matchstr(last_expand, '\$grouplist\:\d\+\$')
-        if matched_gname =~'\$grouplist'
-            let last_expand = substitute(last_expand, '\$grouplist\:\d\+\$', s:grouplist[grp_idx].val, '')
+        " "mkr:grp:2"
+        let matched_gname = matchstr(last_expand, ',grp:\d\+')
+        if matched_gname =~'grp'
+            let last_expand = substitute(last_expand, ',grp:\d\+,', s:grouplist[grp_idx].val, '')
         endif
         let idx += 1
     endwhile
     
-    " "return final expaned abbr if `grouplist` exists"
     return last_expand
 endf
 
@@ -437,12 +440,13 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         return a:matched_abbr
     endif
 
-    " extract []
-    let pat_attr = '\(\(\w\+\)\@<=\[.\+\]\([+>]\)\@=\)\|\(\w\+\)\@<=\[.\+\]'
+    " extract emmet attributes []
+    let pat_attr = '\(\(\w\+\)\@<=\[.\+\]\([{}+>]\)\@=\)\|\(\w\+\)\@<=\[.\+\]'
     let m_attr = str#matchall(abbr_str, pat_attr)
     let attrlst = str#matchcount(abbr_str, pat_attr)
     for ix in range(attrlst)
-        let abbr_str = substitute(abbr_str, pat_attr, '$attr:'.ix.'$', '')
+        " "mkr:attr:0"
+        let abbr_str = substitute(abbr_str, pat_attr, ',attr:'.ix.',', '')
     endfor
 
     " extract {} 
@@ -454,25 +458,25 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         endif
         let text = matchstr(abbr_str, pat_elm_text)
         call add(s:EmText, text)
-        let abbr_str = substitute(abbr_str, pat_elm_text, '$text:'.idx.'$', '')
+        let abbr_str = substitute(abbr_str, pat_elm_text, ',text:'.idx.',', '')
         let idx += 1
     endwhile
 
-    let abbr_str = substitute(abbr_str, '>', "{${child}}${sep}", 'g')
-    let abbr_str = substitute(abbr_str, '+', "{${NL}}${sep}", 'g')
-
+    let abbr_str = substitute(abbr_str, '>', "{${child}}%", 'g')
+    let abbr_str = substitute(abbr_str, '+', "{${NL}}%", 'g')
 
     let max = 0
-    while abbr_str =~ '\$attr:'
+    " "mkr:attr"
+    while abbr_str =~ ',attr:'
         if max > 10
             break
 		endif
-        let idx = matchstr(abbr_str, '\(\$attr:\)\@<=\d\+')
-        let abbr_str = substitute(abbr_str, '\$attr:\d\+\$', m_attr[idx], '')
+        let idx = matchstr(abbr_str, '\(,attr:\)\@<=\d\+')
+        " "mkr:attr"
+        let abbr_str = substitute(abbr_str, ',attr:\d\+,', m_attr[idx], '')
     endwhile
 
-
-    let abbr_list = split(abbr_str, '\${sep}')
+    let abbr_list = split(abbr_str, '%')
     " - Tab setup:
     " set ltabs globally in function, so that
     " each loop can track current `ltabs` size
@@ -487,13 +491,14 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
             let abbr = substitute(abbr, '\(\w\+\)\@<=\(\[.\+\]\)', '[EmAttr]', '')
             let s:EmAttr = getattr
         endif
-        let EmText = matchstr(abbr, '\zs\$text\:\d\+\$')
+        let EmText = matchstr(abbr, '\zs,text:\d\+,')
         let CMD = matchstr(abbr, '${\w\+}')
         " arrange abbr orders
         if empty(CMD)
-            let abbr = substitute(abbr, '\zs\$text\:\d\+\$', '{'.EmText.'}', '')
+            " "mkr:text"
+            let abbr = substitute(abbr, '\zs,text:\d\+,', '{'.EmText.'}', '')
         else
-            let abbr = substitute(abbr, '\zs\$text\:\d\+\$', '', '')
+            let abbr = substitute(abbr, '\zs,text:\d\+,', '', '')
             let abbr = substitute(abbr, '{\${\w\+}}', '{'.EmText.CMD.'}', '')
         endif
 
@@ -560,8 +565,9 @@ function! s:parse_abbr(matched_abbr, tabs=0, parsegroups=0)
         " get: correct grouplist index 
         " set: correct ltabs for grouplist
         " before: for-loop ended
-        if abbr =~ '\$grouplist:'
-            let grp_idx = matchstr(abbr, '\d') 
+        " "mkr:grp"
+        if abbr =~ ',grp:'
+            let grp_idx = matchstr(abbr, '\(:\)\@<=\d') 
             if empty(s:grouplist[grp_idx].tabs)
                 let s:grouplist[grp_idx].tabs = ltabs
             endif
@@ -601,6 +607,8 @@ function! TabNums()
 endf
 
 " _get_numbered
+" $ -> 1
+" $$ -> 01
 function! s:get_numbered(multiplied, start, end, stride=1)
     let numbered = ""
     let pat_number = '\(\(\w\+\)\|\(\w\+\s\+\)\)\@<=\(\$\+\)'
@@ -712,7 +720,7 @@ endf
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " function: "_extract_groups"
-" Return  : "return": div+$grouplist:0$+$grouplist:2$
+" Return  : "return": div+|grouplist=0|+|grouplist=2|
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 function! s:extract_groups(multiplied_abbr)
     let refined_abbr = a:multiplied_abbr
@@ -734,7 +742,8 @@ function! s:extract_groups(multiplied_abbr)
                 "#2": add '(li>a)*2' to grouplist without trim ()
                 call add(s:grouplist, {'val': matched_group, 'tabs':''})
             endif
-            let refined_abbr = substitute(refined_abbr, s:pat_emmet_group, '$grouplist:'.gidx.'$', '')
+            " "mkr:grp:0"
+            let refined_abbr = substitute(refined_abbr, s:pat_emmet_group, ',grp:'.gidx.',', '')
             let gidx += 1
         else
             break
@@ -762,7 +771,8 @@ function! s:multiple_abbr(matched_abbr)
             let times = matchstr(inner_group, '\d\+')
             let new_inner = ''
             for i in range(times)
-                let new_inner .= grp_base.'+'
+                let dollars = len(matchstr(grp_base, '\$\+'))
+                let new_inner .= substitute(grp_base, '\$\+', printf("%0".dollars."d", i+1), 'g').'+'
             endfor
             let new_inner = new_inner[:-2]
             let multiplied_abbr = substitute(multiplied_abbr, s:pat_mul_inner_group, new_inner, '')
@@ -882,9 +892,6 @@ function! s:jumping()
     endif
 endf
 
-function expand#selection(selected)
-    return Expand_abbr(a:selected)
-endf
 " __Expand_abbr
 function! Expand_abbr(matched_abbr)
 
@@ -899,6 +906,7 @@ function! Expand_abbr(matched_abbr)
 
         " "3 -Get current tabsize when <Tab> pressed"
         let tabs = TabNums()
+
         " Parse grouped abbr for the first time to get tabsize for if grouplist exists.
         " otherwise, parse abbr as normal
         " "4 -parsing grouped abbr"

@@ -67,7 +67,7 @@ function! snippet#htmldjango()
             let snip = pipcmd[:-2]
             let snippet = get(s:hd_snippets, snip, '')
             if !empty(snippet)
-                let restline = str#after()
+                let restline = str#aftercursor()
                 let inqs = matchstr(restline, '.\{-}\("\)\@=')
                 let snippet = substitute(snippet, '"', "'", 'g')
                 let append_snippet = substitute(snippet, '\${0}', inqs, '')

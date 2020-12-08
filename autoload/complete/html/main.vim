@@ -4,7 +4,7 @@ let s:css_snippets = load#snippets('css')
 
 function! s:complete_internal_css()
     let values = ""
-    let before = trim(str#before())
+    let before = trim(str#beforecursor())
     let typed_prop = matchstr(before, '.\+\(:$\)\@=')
 
     if !empty(typed_prop)

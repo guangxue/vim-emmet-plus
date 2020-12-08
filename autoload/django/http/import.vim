@@ -1,6 +1,18 @@
+function! django#http#import#all()
+    return [
+        \'SimpleCookie', 'parse_cookie', 'HttpRequest', 'QueryDict',
+        \'RawPostDataException', 'UnreadablePostError',
+        \'HttpResponse', 'StreamingHttpResponse', 'HttpResponseRedirect',
+        \'HttpResponsePermanentRedirect', 'HttpResponseNotModified',
+        \'HttpResponseBadRequest', 'HttpResponseForbidden', 'HttpResponseNotFound',
+        \'HttpResponseNotAllowed', 'HttpResponseGone', 'HttpResponseServerError',
+        \'Http404', 'BadHeaderError', 'JsonResponse', 'FileResponse',
+    \]
+endfun
+
 function! django#http#import#HttpRequest()
     let request = {
-    \   'props': [
+    \   'params': [
     \       #{word:'scheme', menu:'',
     \           info:"{httpRequest.scheme}\n"
     \               ."A string represeting the scheme of the request(http or http usually)."},
@@ -31,7 +43,7 @@ endfun
 
 function! django#http#import#HttpResponse()
     let response = {
-    \   'props': [
+    \   'params': [
     \       #{word:'scheme', menu:'',
     \           info:'A string represeting the scheme of the request(http or https usually)'},
     \       #{word:'body', menu:'',

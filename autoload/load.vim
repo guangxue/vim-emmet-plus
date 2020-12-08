@@ -234,6 +234,7 @@ let s:expand_settings = {
 \           "bdrc": "border-right-color: ${1:#000}",
 \           "bdri": "border-right-image: url(${0})",
 \           "bdrs": "border-radius",
+\           "br": "border-radius",
 \           "bdrst": "border-right-style",
 \           "bdrw": "border-right-width",
 \           "bds": "border-style",

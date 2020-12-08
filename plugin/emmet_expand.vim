@@ -1,7 +1,7 @@
 "====================================================================================
 " vim-emmet-expand : An emmet-like plugin for vim, comes with auto pairs, snippet
 "                  : expand, triggered by `Tab`.
-" Last Change      : 23 Oct 2020
+" Last Change      : 01 Dec 2020
 " Maintainer       : guangxue <contact.guangxue@gmail.com>
 " Version          : v0.1
 " License          : MIT
@@ -37,6 +37,7 @@ augroup completemenu
     autocmd TextChangedI *.html,*.htmldjango call complete#html#main#func()
     autocmd TextChangedI *.py call complete#django#main#func()
     autocmd BufWritePost *.py call django#views#parse#saved()
+    autocmd completeDone *.* call complete#items#done()
 augroup END
 
 let &cpoptions = s:save_cpo

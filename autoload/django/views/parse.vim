@@ -33,9 +33,10 @@ function! s:logwriter(render_template, context, fdpath)
             else
                 let line = ''
 			endif
+            " add new data to logfile only
             let loglines = []
-            for ll in readfile(s:logfile)
-                call add(loglines, ll)
+            for l in readfile(s:logfile)
+                call add(loglines, l)
 			endfor
             if index(loglines, line) < 0 && !empty(line)
                 call writefile([line], s:logfile, 'a')
@@ -47,6 +48,7 @@ endfun
 
 function! django#views#parse#saved()
     let fdpath = complete#django#models#fdpath()
+    let [lnum, colnum] = [line('.'), col('.')]
     let clnum = 0
     for line in readfile(expand("%:p"))
         let clnum += 1
@@ -60,7 +62,6 @@ function! django#views#parse#saved()
                 call cursor(clnum, 1)
                 let startlnum = search(render_context.' = {', 'bWz')
                 let endlnum = search('}', 'Wz', clnum)
-                "let context = join(getlist#fromlines(startlnum, endlnum))->matchstr('{\s*\zs.\+\ze\s*}')
                 let context = join(getlist#fromlines(startlnum, endlnum))->matchstr('{.\+}')
                 call s:logwriter(render_template, context, fdpath)
             elseif render_context =~ '}$'
@@ -69,4 +70,5 @@ function! django#views#parse#saved()
             endif
 		endif
     endfor
+    call cursor(lnum, colnum)
 endfun

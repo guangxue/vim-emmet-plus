@@ -27,3 +27,10 @@ function! complete#items#user_data(items, word)
     endfor
     return param_list
 endfun
+
+function! complete#items#done()
+    if str#last2chars() == "''" || str#last2chars() == '""'
+        call feedkeys("\<ESC>i")
+        return ''
+    endif
+endfun

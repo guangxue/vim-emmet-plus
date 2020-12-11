@@ -69,10 +69,25 @@ function! bs#Backspace()
         if matched_index > 0
             let get_ptext = ptext[matched_index:] 
             return s:del_inside_parens(get_ptext)
-        elseif str#nnchar() == ','
-            return s:dels."\<Del>"
         else
             return s:del_inside_parens()
+        endif
+    elseif str#pchar() == '>' && str#nchar() == '<'
+        let curpos = col('.')-2
+        let close_tag = matchstr(str#aftercursor(),'<\/\w\+>') 
+        let cltname = matchstr(close_tag, '\w\+')
+        "opening tag
+        let get_opentag = getline('.')[str#bsearch_tagcol(len(str#beforecursor())):]
+        let is_opentag = matchstr(get_opentag, '<\w.\{-}>')
+        if !empty(is_opentag)
+            let optname = matchstr(is_opentag, '\(<\)\@<=\w\+')
+            if optname == cltname
+                return s:bs.bs#del(len(close_tag))
+            else
+                return s:bs
+            endif
+        else
+            return s:bs
         endif
     else
         return s:bs

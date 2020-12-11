@@ -4,10 +4,7 @@
 " For       : closer
 """"""""""""""""""""""""""""""""""""""""""""""
 function! close#brackets(closer)
-    let nchar = str#nchar()
-    let pchar = str#pchar()
-
-    if nchar == a:closer
+    if str#nchar() == a:closer
         return move#right(1)
     endif
     return a:closer

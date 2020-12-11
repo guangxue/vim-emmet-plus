@@ -143,7 +143,7 @@ Insert mode completion:                *complete-items-functions* *complete-help
     complete#items#user_data()
 
 -------------------------------------------------------------------------------
-    str#expr()                                      str#expr()
+    str#expr()                                      *str#expr()*
             Get the string before current cursor position from first non-blank
 	    whitspace.
 	    Example: >

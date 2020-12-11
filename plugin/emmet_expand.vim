@@ -14,7 +14,7 @@ if !exists('g:expand_vimscript')
     let g:expand_vimscript = 0
 endif
 
-call map#pairs(['()', '{}', '[]', '<>', '""', "''", '``'], 'default')
+call map#pairs(['()', '{}', '[]', '""', "''", '``'], 'default')
 call map#ifunc({
 \   'append':'append#brackets',
 \   'close':'close#brackets',
@@ -22,7 +22,7 @@ call map#ifunc({
 \   '<BS>':'bs#Backspace',
 \   '<Space>':'sp#Space',
 \   '<C-b>': 'wrap#comment',
-\   'feature':{',':'move#inside()'}
+\   'feature':{',':'move#inside()', '>':'complete#items#htmltags()'}
 \})
 call map#vfunc({'<Tab>': 'wrap#abbr'})
 call map#nfunc({'<C-b>': 'wrap#comment'})

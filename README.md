@@ -193,18 +193,19 @@ GET : def __str__(|):
 When in django html: {|}
 Type: %
 GET : {% | %}
-```
 
-## Comma appending.
-
-```ruby
-When: ',|'
-Type: ,
-Get : '|',
-
-When: last line is 'text',
+When: ''|
 Type: '
-Get : '|',
+GET : '''|'''
+
+# auto-pairs for html tag
+When <div class="header"|
+Type: >
+GET : <div class="header">|</div>
+
+When : <div class="header">|</div>
+Type : <BS>
+GET  :  <div class="header"|
 ```
 
 ## Newlines
@@ -251,6 +252,46 @@ NOT TO
 <div><button></button></div>
 ```
 
+### Semi-colon attributes
+
+To expand attributes with different values, put different values inside backtick, and
+separate each value with semi-colon, will get different attribute values.
+
+```html
+    select[id=size name=size]>option[value=`Small;Medium;Large`]{`Small;Medium;Large`}*3
+```
+Will expand to
+
+```html
+    <select id="size" name="size">
+        <option value="Small">Small</option>
+        <option value="Medium">Medium</option>
+        <option value="Large">Large</option>
+    </select>
+```
+NOT TO
+
+```html
+    <select id="size" name="size">
+        <option value="`Small;Medium;Large`">`Small;Medium;Large`</option>
+        <option value="`Small;Medium;Large`">`Small;Medium;Large`</option>
+        <option value="`Small;Medium;Large`">`Small;Medium;Large`</option>
+    </select>
+```
+
+## Comma appending.
+
+```ruby
+When: ',|'
+Type: ,
+Get : '|',
+
+When: last line is 'text',
+Type: '
+Get : '|',
+```
+
+
 ## Configuration
 
 ```vim
@@ -264,7 +305,6 @@ let g:expand_html_snippets = {'ul5': 'ul>li*5'}
 " Enabling by append following line.
 let g:expand_vimscript = 1
 ```
-
 
 ## In progress..(More features to come)
 

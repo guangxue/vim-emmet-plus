@@ -8,6 +8,12 @@ function! s:append_quotes(qt, space=0)
         return a:qt
     elseif str#isalpha(str#nchar())
         return a:qt
+    elseif str#last2chars() == '``' && a:qt == '`'
+        return repeat('`', 4).move#left(3)
+    elseif str#last2chars() == '""' && a:qt == '"'
+        return repeat('"', 4).move#left(3)
+    elseif str#last2chars() == "''" && a:qt == "'"
+        return repeat("'", 4).move#left(3)
     else
         if a:space > 0
             return a:qt[0].'  '.a:qt[1].move#left(2)
@@ -40,5 +46,3 @@ function! append#brackets(opener, closer, space=0)
         return s:append_brackets(a:opener, a:closer, a:space)
     endif
 endfunction
-
-

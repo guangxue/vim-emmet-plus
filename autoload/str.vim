@@ -302,3 +302,22 @@ function! str#clearRegs()
         call setreg(r, [])
     endfor
 endf
+
+function! str#get_tagname(nearest_opentag)
+    let htmltag = a:nearest_opentag
+    let tagstr = matchstr(htmltag, '\(<\)\@<=\a\+.\=')
+    let endchar = tagstr[len(tagstr)-1]
+    if endchar =~ '^\w\|^\s\|^>'
+        let tagname = matchstr(tagstr, '\a\+')
+        return tagname
+    endif
+endfun
+
+function! str#bsearch_tagcol(from_index)
+    for i in range(a:from_index, 1, -1)
+        if str#beforecursor()[i] == '<'
+            return i
+        endif
+    endfor
+endfun
+

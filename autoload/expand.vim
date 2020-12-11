@@ -626,6 +626,14 @@ function! TabNums()
     return tabs
 endf
 
+function! s:number_semicolon_attrs(to_multiple_htmltag, to_split_attrs)
+    let numbered = ""
+    for attr in split(a:to_split_attrs, ';')
+        let numbered .= substitute(a:to_multiple_htmltag, '`'.a:to_split_attrs.'`', attr, 'g')
+	endfor
+    return numbered
+endfun
+
 " _get_numbered
 " $ -> 1
 " $$ -> 01
@@ -633,6 +641,17 @@ function! s:get_numbered(multiplied, start, end, stride=1)
     let numbered = ""
     let pat_number = '\(\(\w\+\)\|\(\w\+\s\+\)\)\@<=\(\$\+\)'
     let loops = str#matchcount(a:multiplied, pat_number)
+
+    " split semi-colon attributes
+    let attrs_tosplit = matchstr(a:multiplied, '<\w\+.\{-}>')
+    let attrs_tosplit = matchstr(attrs_tosplit, '\(`\)\@<=.\+\(`\)\@=')
+    let intag_tosplit = matchstr(a:multiplied, '\(>`\)\@<=.\+\(`\)\@=')
+
+    if attrs_tosplit == intag_tosplit || !empty(attrs_tosplit)
+        return s:number_semicolon_attrs(a:multiplied, attrs_tosplit)
+    endif
+
+
     for num in range(a:start, a:end, a:stride) 
         let multi = a:multiplied
         for i in range(loops)
@@ -647,7 +666,9 @@ function! s:get_numbered(multiplied, start, end, stride=1)
     return numbered
 endf
 
+
 " _numbering
+" multiplied: trimed *3 single html tags within content
 function! s:numbering(multiplied, times, starts)
     let multiplied = substitute(a:multiplied, '\${0}', '|', 'g')
     let numbered = ""
@@ -697,7 +718,7 @@ function! s:multiple_tags(expanded_abbr)
             let mul_cltag = substitute(mul_optag, '<', '<\\/', 'g').'>'
             let mul_cltag = substitute(mul_cltag, '\$', '\$', 'g')
 
-            " get everything before open multiple tags: ...<a$*3></a$*3>
+            " get everything before open multiple tags: ~>...<a$*3></a$*3>
             let before_mtag = matchstr(expanded_abbr, '.\+\('.mul_optag.'\)\@=')
             let split_bform = split(before_mtag, "\n")
             
@@ -713,13 +734,15 @@ function! s:multiple_tags(expanded_abbr)
             let pat_between_multags = mul_optag.'.\{-}'.mul_cltag
             let between_matched_multags = matchstr(expanded_abbr, pat_between_multags)
 
+
             let tagname = matchstr(multag, '\w\+\$*')
             let def_attr = get(s:settings.html.default, tagname, "")
             let def_attr = !empty(def_attr) ? ' '.def_attr : ""
             
             " remove multi symbol(@-5*3) in tags
-            let between_multags = substitute(between_matched_multags, '\(@-\d*\|@\d\|\*\d\+\)', def_attr, '')
-            let between_multags = substitute(between_multags, '\(@-\d*\|@\d\|\*\d\+\)', '', 'g')
+            let pat_remove_multi = '\(@-\d*\|@\d\|\*\d\+\)' 
+            let between_multags = substitute(between_matched_multags, pat_remove_multi, def_attr, '')
+            let between_multags = substitute(between_multags, pat_remove_multi, '', 'g')
 
             let is_inline = index(s:settings.html.inline, tagname)
             if is_inline >= 0 && before_mtag =~ '\(<\w\+\|<\w\+\*\d\+\)'
@@ -774,9 +797,9 @@ function! s:extract_groups(multiplied_abbr)
 endf
 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-" function : " _multiple_abbr()"
+" function : " _multiple_parens()"
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-function! s:multiple_abbr(matched_abbr)
+function! s:multiple_parens(matched_abbr)
     let multiplied_abbr = a:matched_abbr
 
     " "parse inner/outer group with mulitiplications"
@@ -816,11 +839,12 @@ function! s:multiple_abbr(matched_abbr)
             let multi_outer = substitute(multiplied_abbr, pat_mul_outer_group, new_outer, '')
         endfor
     endif
+
     if !empty(multi_outer)
         return multi_outer
     endif
+
     return multiplied_abbr
-    
 endfunction
 
 function! SetCursor()
@@ -919,10 +943,10 @@ function! Expand_abbr(matched_abbr)
 
     if !empty(a:matched_abbr) && jumping == 'nope!'
         " "1 -get multiplied abbr"
-        let multiplied_abbr = s:multiple_abbr(a:matched_abbr)
+        let multiplied_parens = s:multiple_parens(a:matched_abbr)
 
         " "2 -extract groups of abbr"
-        let grouped_abbr = s:extract_groups(multiplied_abbr)
+        let grouped_abbr = s:extract_groups(multiplied_parens)
 
         " "3 -Get current tabsize when <Tab> pressed"
         let tabs = TabNums()

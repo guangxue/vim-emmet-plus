@@ -21,8 +21,8 @@ call map#ifunc({
 \   '<CR>':'cr#Enter',
 \   '<BS>':'bs#Backspace',
 \   '<Space>':'sp#Space',
-\   '<C-b>': 'wrap#comment',
-\   'feature':{',':'move#inside()', '>':'complete#items#htmltags()'}
+\   '<C-b>/': 'wrap#comment',
+\   'feature':{',':'move#inside()', '>':'complete#items#htmltags()', '*':'append#comments()'}
 \})
 call map#vfunc({'<Tab>': 'wrap#abbr'})
 call map#nfunc({'<C-b>': 'wrap#comment'})
@@ -39,6 +39,10 @@ augroup completemenu
     autocmd BufWritePost *.py call django#views#parse#saved()
     autocmd completeDone *.* call complete#items#done()
 augroup END
+
+nnoremap <C-x> :q!<Enter>
+nnoremap <C-s><C-x> :wq<Enter>
+nnoremap <C-s> :w<Enter>
 
 let &cpoptions = s:save_cpo
 unlet s:save_cpo

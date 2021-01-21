@@ -22,7 +22,7 @@ function! s:from_django()
     return 0
 endfun
 
-function! s:from_models()
+function! s:from_modelspy()
     let lnum = line('.')
     let bfc = str#beforecursor()->matchstr('from\s\(django\)\@!\(\w\+\)*\.models\simport')
     for ln in range(lnum, 1, -1)
@@ -44,20 +44,16 @@ function! s:from_views()
     return 0
 endfunc
 
-function! s:get_inherited_name(trigger)
-    let pat_clsname ='\(class\s\w\+(\)\+\(\w\+\)\+\(\.\w\+\)*\():\)\+' 
-    let cls_lnum = PrevClasslnum()
-    let matched = matchstr(getline(cls_lnum), pat_clsname)
-    let trigger = substitute(matched, pat_clsname, '\2', 'ig')
-    let module = substitute(matched, pat_clsname, '\3', 'ig')
-    if trigger == a:trigger && !empty(module)
-        return substitute(module, '\.', '__', '')
-    elseif trigger == a:trigger && empty(module)
-        return ""
-    else
-        return "NOTFOUND"
-    endif
-endfun
+function! s:from_formspy()
+    let lnum = line('.')
+    let bfc = str#beforecursor()->matchstr('from\s\(django\)\@!\(\w\+\)*\.forms\simport')
+    for ln in range(lnum, 1, -1)
+        if !PrevClasslnum() && !empty(bfc)
+            return 1
+        endif
+	endfor
+    return 0
+endfunc
 
 function! s:import_with_autoload(modules)
     let mpath = substitute(a:modules, '\.', '/', 'g')
@@ -79,7 +75,7 @@ function! s:import_with_autoload(modules)
     return ''
 endfun
 
-function! complete#django#project#menus()
+function! complete#django#import#section()
     let expr = str#expr()
     let trigger_byauto = {}
     let trigger_bypath = {}
@@ -95,7 +91,7 @@ function! complete#django#project#menus()
             let modules = matchstr(expr, '\(from\s\)\@<=.\+\(\simport\s\)\@=') 
             return s:import_with_autoload(modules)
         endif
-    elseif s:from_models()
+    elseif s:from_modelspy()
         if expr =~ 'import\s$'
             let model = matchstr(expr, '\(from\s\)\@<=.\+\(\simport\s\)\@=') 
             let model_path = substitute(model, '\.', '\/', 'g')
@@ -109,63 +105,20 @@ function! complete#django#project#menus()
             let model_names = django#getlines#model_names(model_path)
             return complete#popup#menu(model_names)
         endif
+    elseif s:from_formspy()
+        if expr =~ 'import\s$'
+            let forms = matchstr(expr, '\(from\s\)\@<=.\+\(\simport\s\)\@=') 
+            let forms_path = substitute(forms, '\.', '\/', 'g')
+            let forms_path = expand("%:p:h").forms_path.'.py'
+            let forms_names = django#getlines#forms_names(forms_path)
+            return complete#popup#menu(forms_names)
+        elseif expr =~ 'import.\+,\s$'
+            let forms = matchstr(expr, '\(from\s\)\@<=.\+\(\simport\s\)\@=') 
+            let forms_path = substitute(forms, '\.', '\/', 'g')
+            let forms_path = expand("%:p:h").forms_path.'.py'
+            let forms_names = django#getlines#forms_names(forms_path)
+            return complete#popup#menu(forms_names)
+        endif
+        
     endif
-
-    " Set trigger_byauto; trigger_bypath
-    " Scan from previous line to line 1
-    " if line contains "from django", then register autoload funcs
-    " if line contains "from .models", then register directory path
-    for line in range(1, line('.')-1)
-        let cline = getline(line)
-        if cline =~ 'from django.\+import\s\w\+'
-            call extend(trigger_byauto, complete#django#trigger#register(cline, 'autoload'), 'keep')
-        elseif cline =~ 'from\s\(django\)\@!\(\w\+\)*\.models\simport'
-            " from .models import Pet
-            call extend(trigger_bypath, complete#django#trigger#register(cline, 'path'), 'keep')
-        endif
-    endfor
-    
-    for [trigger, autofunc] in items(trigger_byauto)
-        " Trigger properties
-        " admin.|...
-        " TODO:
-        "if expr =~ '^'.trigger.'\.$'
-        "    let props = {autofunc}().props
-        "    return complete#popup#menu(props)
-        "endif
-
-        " Trigger imported functions
-        " path(|...
-        if expr =~ trigger.'($\|'.trigger.'(.\+, $'
-            call complete#django#trigger#importedfunc(autofunc)
-        endif 
-
-        " Tiggers when:
-        " name = models.|
-        " Or:
-        " ^def\s|
-        let insideclass = PrevClasslnum()
-        if insideclass
-            let classline = getline(insideclass)
-            let trigger_word = matchstr(classline, '\w\+\(\.\)\@=')
-            if empty(trigger_word)
-                let clnum = PrevClasslnum()
-                " Found prevlnum that contains `class`
-                " match trigger_word that inside `()`
-                let trigger_word = matchstr(classline, '\((\)\@<=\w\+\()\)\@=')
-			endif
-            if trigger_word == trigger
-                let suffix = s:get_inherited_name(trigger)
-                if suffix != "NOTFOUND"
-                    let autofunc = autofunc.suffix
-                    call complete#django#trigger#inheritance(trigger, autofunc)
-                endif
-            endif
-        endif
-	endfor
-
-    " Models: QuerySet API
-    for [trigger, fpath] in items(trigger_bypath)
-        call complete#django#models#QuerySet(trigger, fpath)
-	endfor
 endfun

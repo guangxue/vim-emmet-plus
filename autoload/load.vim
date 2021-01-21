@@ -444,6 +444,7 @@ let s:expand_settings = {
 \           'block': "{% block ${0} %}\n{% endblock %}",
 \           'comment': '{% comment %}'."\n\t${0}\n{% endcomment %}",
 \           'cycle': '{% cycle ${0} %}',
+\           'csrf':'{% csrf_token %}${0}',
 \           'loadstatic': '{% load static %}',
 \           'iblock': "{% block ${0} %}{% endblock %}",
 \           'extends': '{% extends "${0}" %}',
@@ -511,4 +512,10 @@ endf
 
 function! load#htmltaglist()
     return s:expand_settings.html.taglist
+endfun
+
+function! load#snipkeys(snipname)
+    for [k,v] in items(s:expand_settings[a:snipname].snippets)
+        echom k.' => '.v
+    endfor
 endfun

@@ -69,29 +69,22 @@ function! wrap#comment()
     let clnum = line('.')
     let pat_str = '\zs\S.\+\S\ze'
     let cline = getline('.')
-    let clinestr = matchstr(cline, pat_str)
+    let str = matchstr(cline, pat_str)
+    let expr = str#expr()
 
     if ft =~ 'html'
         return lang#html#togglecomment()
     else
-        if str =~ '^\/\*\='
-            if str[1] == '*'
-                let uncomment_line = substitute(line, '\/\* ', '', 'g')
-                let uncomment_line = substitute(uncomment_line, ' \*/', '', 'g')
-                call setline('.', uncomment_line)
-            elseif str[1] == '/' && str[2] == ' '
-                let uncomment_line = substitute(line, '\/\/ ', '', 'g')
-                call setline('.', uncomment_line)
-            elseif str[1] == '/' && str[2] != ' '
-                let uncomment_line = substitute(line, '\/\/', '', 'g')
-                call setline('.', uncomment_line)
-                return ''
-            endif
+        let expr = str#expr()
+        let first2 = expr->strpart(0,2)
+
+        if first2 == '/*'
+            let uncommented = substitute(getline('.'), '\/\*', '', 'g')
+            let uncommented = substitute(uncommented, '\*\/', '', 'g')
+            call setline('.', uncommented)
         else
-            let comment_line = substitute(line, pat_str, '/* '.str.' */', '')
-            call setline('.', comment_line)
-            return ''
-        endif
+            return "/*  */".move#left(3)
+		endif
     endif
     return ''
 endf

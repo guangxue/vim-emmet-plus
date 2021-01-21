@@ -1,7 +1,7 @@
 # vim-emmet-expand
 
 An emmet-like plugin comes with auto pairs, snippet expanding and more. All triggered by pressing `Tab`
-This plugin is for personal ***learning purpose only.***
+This plugin is for personal ***learning purpose only.*** **Support vim version 8.2+**
 
 ![screenshot](doc/demo.gif)
 

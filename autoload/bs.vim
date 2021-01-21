@@ -4,6 +4,10 @@ let s:dels = s:del.s:bs
 let s:def_del = repeat(s:del, 2).s:bs
 let s:fstr_del = repeat(s:bs, 2).s:del
 
+function! bs#both()
+    return s:dels
+endfun
+
 function! bs#bothside()
     return s:dels
 endf

@@ -71,6 +71,20 @@ function! django#getlines#model_names(fpath)
     return modelnames
 endfun
 
+function! django#getlines#forms_names(fpath)
+    let fpath = a:fpath
+    let formnames = []
+    for line in readfile(fpath)
+        if line =~ 'class\s\w\+.\+\(:\)\@='
+            let form_class = matchstr(line, '\(class\s\)\@<=\w\+\((forms.Form):\)\@=')
+            if !empty(form_class)
+                call add(formnames, form_class)
+	        endif
+        endif
+	endfor
+    return formnames
+endfun
+
 function! django#getlines#view_names(fpath)
     let fpath = a:fpath
     let viewnames = []

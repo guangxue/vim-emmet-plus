@@ -46,3 +46,11 @@ function! append#brackets(opener, closer, space=0)
         return s:append_brackets(a:opener, a:closer, a:space)
     endif
 endfunction
+
+function! append#comments()
+    if str#pchar() == '/' && str#aftercursor() !~ '*/'
+        return '*  */'.move#left(3)
+    else
+        return '*'
+    endif
+endfun

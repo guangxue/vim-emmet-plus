@@ -183,6 +183,7 @@ function! str#expr()
    return line[idx:str#pidx()]
 endfun
 
+" start from first non-blank character to current cursor position
 function! str#pword()
     let before = str#beforecursor()
     if !empty(before)

@@ -23,51 +23,27 @@ function! s:__inclass(name)
     return 0
 endfun
 
-function! s:__optionals(optionals)
-    let expr = str#expr()
-    if expr =~ '??$'
-        return complete#popup#menu(a:optionals, -2)
-    elseif expr =~ '??\w\+$'
-        let pword = matchstr(expr, '\w\+$')
-        let cur = len(pword) + 2
-        let pword_list = complete#items#startswith(a:optionals, pword)
-        return complete#popup#menu(pword_list, -cur)
-    endif
-endfun
-
-function! s:__attributes(imported)
-    let attr_list = get(a:imported, 'attributes', [])
-    let expr = str#expr()
-    if expr =~ '^\w\+'
-        let pword = matchstr(expr, '\w\+$')
-        let cur = len(pword) + 2
-        let pword_list = complete#items#startswith(attr_list, pword)
-        return complete#popup#menu(pword_list, -cur)
-    else
-        return s:__optionals(attr_list)
-    endif
-endfun
-
-function! s:__parameters(imported)
-    let option_list = get(a:imported, 'options', [])
-    let expr = str#expr()
-    if expr =~ '($\|,\s$'
-        let subclass_word = matchstr(expr, '\(\.\)\@<=\w\+')
-        if !empty(subclass_word)
-            let param_list = complete#items#user_data(a:imported.subclass, subclass_word)
-            return complete#popup#menu(param_list)
+" Set trigger_byauto; trigger_bypath
+" Scan from previous line to line 1
+" if line contains "from django", then register autoload funcs
+" if line contains "from .models;from .forms" then register directory path
+function! complete#django#trigger#register()
+    let trigger_byauto = {}
+    let trigger_bypath = {}
+    for line in range(1, line('.')-1)
+        let cline = getline(line)
+        if cline =~ 'from django.\+import\s\w\+'
+            call extend(trigger_byauto, s:parseline(cline, 'autoload'), 'keep')
+        elseif cline =~ 'from\s\(django\)\@!\(\w\+\)*\(\.models\|\.forms\)\simport'
+            " from .models import Pet
+            " from .forms import ContactForm
+            call extend(trigger_bypath, s:parseline(cline, 'path'), 'keep')
         endif
-        let method_word = matchstr(expr, '\w\+\((\)\@=')
-        if !empty(method_word)
-            let param_list = complete#items#user_data(a:imported.methods, method_word)
-            return complete#popup#menu(param_list)
-        endif
-    else
-        return s:__optionals(option_list)
-    endif
+    endfor
+    return [trigger_byauto, trigger_bypath]
 endfun
 
-function! complete#django#trigger#register(cline, type)
+function! s:parseline(cline, type)
     let cline = a:cline
     let imported = matchstr(cline, '\(import\s\)\@<=.\+$')
     let froms = matchstr(cline, '\(from\s\)\@<=.\+\simport')
@@ -138,6 +114,77 @@ function! complete#django#trigger#importedfunc(autofunc)
     endif
 endfun
 
+function! s:__optionals(optionals)
+    let expr = str#expr()
+    if expr =~ '?$'
+        return complete#popup#menu(a:optionals, -1)
+    elseif expr =~ '?\w\+$'
+        let pword = matchstr(expr, '\w\+$')
+        let cur = len(pword) + 1
+        let pword_list = complete#items#startswith(a:optionals, pword)
+        return complete#popup#menu(pword_list, -cur)
+    endif
+endfun
+
+function! s:__attributes(imported)
+    let attr_list = get(a:imported, 'attributes', [])
+    let expr = str#expr()
+    if expr =~ '^\w\+'
+        let pword = matchstr(expr, '\w\+$')
+        let cur = len(pword) + 2
+        let pword_list = complete#items#startswith(attr_list, pword)
+        return complete#popup#menu(pword_list, -cur)
+    else
+        return s:__optionals(attr_list)
+    endif
+endfun
+
+function! s:__subclass(imported)
+    let option_list = get(a:imported, 'options', [])
+    if expr =~ '($\|,\s$'
+        let subclass_word = matchstr(expr, '\(\.\)\@<=\w\+')
+        if !empty(subclass_word)
+            let param_list = complete#items#user_data(a:imported.subclass, subclass_word)
+            return complete#popup#menu(param_list)
+        endif
+        let method_word = matchstr(expr, '\w\+\((\)\@=')
+        if !empty(method_word)
+            let param_list = complete#items#user_data(a:imported.methods, method_word)
+            return complete#popup#menu(param_list)
+        endif
+    elseif expr =~ 'widget\s*=\s*forms\.$'
+        let forms_widgets = a:imported.widgets
+        return complete#popup#menu(forms_widgets)
+    else
+        return s:__optionals(option_list)
+    endif
+endfun
+
+function! s:__methods(method_list)
+    call complete#popup#menu(a:method_list)
+endfun
+
+function! s:__inside_model_parens(imported, startlnum)
+    let option_list = get(a:imported, 'options', [])
+    if getline('.') =~ '\s\w$'
+        let subclass_word = matchstr(getline(a:startlnum), '\(\.\)\@<=\w\+')
+        if !empty(subclass_word)
+            let param_list = complete#items#user_data(a:imported.subclass, subclass_word)
+            return complete#popup#menu(param_list, -1)
+        endif
+        let method_word = matchstr(expr, '\w\+\((\)\@=')
+        if !empty(method_word)
+            let param_list = complete#items#user_data(a:imported.methods, method_word)
+            return complete#popup#menu(param_list, -1)
+        endif
+    elseif getline('.') =~ 'widget\s*=\s*forms\.$'
+        let forms_widgets = a:imported.widgets
+        return complete#popup#menu(forms_widgets)
+    else
+        return s:__optionals(option_list)
+    endif
+endfun
+
 "Tigger when: name = models.|
 function! complete#django#trigger#inheritance(trigger, autofunc)
     let expr = str#expr()
@@ -145,19 +192,25 @@ function! complete#django#trigger#inheritance(trigger, autofunc)
     let method_list = get(imported, 'methods', [])
     let subclass_list = get(imported, 'subclass', [])
 
+    let [startlnum, endlnum] = str#searchrange('(',')')
+    if startlnum != 0 && endlnum != 0
+        let modelstmt = getline(startlnum)->matchstr('\w\+\s\+=\s\+'.a:trigger.'\.\w\+(')
+        " name = models.CharField(
+        "   |
+        " )
+        if !empty(modelstmt)
+            return s:__inside_model_parens(imported, startlnum)
+		endif
+    endif
+
     " name = models.|
     if expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.$'
         return complete#popup#menu(subclass_list)
     elseif expr =~ '^\w\+\s\+=\s\+'.a:trigger.'\.\w\+('
         " name = models.CharField(|
-        call s:__parameters(imported)
-    elseif expr =~ '^def\s'
-        if expr =~ '^def\s$'
-            call complete#popup#menu(method_list)
-        endif
-        if expr =~ '($\|,\s$'
-            call s:__parameters(imported)
-        endif
+        call s:__subclass(imported)
+    elseif expr =~ '^def\s$'
+        call s:__methods(method_list)
     elseif s:__inclass('Meta')
         let imported = django#objects#Model__Meta()
         return s:__attributes(imported)

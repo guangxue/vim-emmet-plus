@@ -642,12 +642,14 @@ function! s:get_numbered(multiplied, start, end, stride=1)
     let pat_number = '\(\(\w\+\)\|\(\w\+\s\+\)\)\@<=\(\$\+\)'
     let loops = str#matchcount(a:multiplied, pat_number)
 
-    " split semi-colon attributes
+    " split semi-colon []attributes
+    " option[value=`Small;Medium;Large`]{`Small;Medium;Large`}*3
     let attrs_tosplit = matchstr(a:multiplied, '<\w\+.\{-}>')
     let attrs_tosplit = matchstr(attrs_tosplit, '\(`\)\@<=.\+\(`\)\@=')
     let intag_tosplit = matchstr(a:multiplied, '\(>`\)\@<=.\+\(`\)\@=')
 
-    if attrs_tosplit == intag_tosplit || !empty(attrs_tosplit)
+
+    if attrs_tosplit == intag_tosplit && !empty(attrs_tosplit) || !empty(attrs_tosplit)
         return s:number_semicolon_attrs(a:multiplied, attrs_tosplit)
     endif
 
